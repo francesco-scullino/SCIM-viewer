@@ -10,21 +10,21 @@ export function UsersGroupsPage() {
   if (environmentId == null || applicationId == null) {
     return (
       <section>
-        <h2>Utenti &amp; Gruppi</h2>
-        <p className="hint">Seleziona un ambiente e un'applicazione dalla barra in alto per iniziare.</p>
+        <h2>Users &amp; Groups</h2>
+        <p className="hint">Select an environment and an application from the bar above to get started.</p>
       </section>
     );
   }
 
   return (
     <section>
-      <h2>Utenti &amp; Gruppi</h2>
+      <h2>Users &amp; Groups</h2>
       <div className="tabs">
         <button className={tab === 'users' ? 'active' : ''} onClick={() => setTab('users')}>
-          Utenti
+          Users
         </button>
         <button className={tab === 'groups' ? 'active' : ''} onClick={() => setTab('groups')}>
-          Gruppi
+          Groups
         </button>
       </div>
       {tab === 'users' ? (

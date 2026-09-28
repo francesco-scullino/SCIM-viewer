@@ -8,10 +8,10 @@ export function Layout() {
         <h1>SCIM Viewer</h1>
         <nav>
           <NavLink to="/" end>
-            Utenti &amp; Gruppi
+            Users &amp; Groups
           </NavLink>
-          <NavLink to="/applications">Applicazioni</NavLink>
-          <NavLink to="/environments">Ambienti</NavLink>
+          <NavLink to="/applications">Applications</NavLink>
+          <NavLink to="/environments">Environments</NavLink>
         </nav>
       </header>
       <EnvironmentAppSelector />

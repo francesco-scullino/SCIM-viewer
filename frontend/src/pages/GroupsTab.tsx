@@ -55,7 +55,7 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
     e.preventDefault();
     try {
       await scimApi.createGroup(applicationId, environmentId, { displayName });
-      showSuccess('Gruppo creato');
+      showSuccess('Group created');
       setDisplayName('');
       setShowForm(false);
       loadGroups();
@@ -65,10 +65,10 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
   };
 
   const handleDeleteGroup = async (group: ScimGroup) => {
-    if (!confirm(`Eliminare il gruppo "${group.displayName}"?`)) return;
+    if (!confirm(`Delete group "${group.displayName}"?`)) return;
     try {
       await scimApi.deleteGroup(applicationId, environmentId, group.id);
-      showSuccess('Gruppo eliminato');
+      showSuccess('Group deleted');
       if (expandedGroupId === group.id) setExpandedGroupId(null);
       loadGroups();
     } catch (err) {
@@ -87,7 +87,7 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
     if (!addUserId) return;
     try {
       await scimApi.updateGroupMember(applicationId, environmentId, group.id, { op: 'add', userId: addUserId });
-      showSuccess('Utente aggiunto al gruppo');
+      showSuccess('User added to group');
       setAddUserId('');
       loadGroups();
     } catch (err) {
@@ -98,7 +98,7 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
   const handleRemoveMember = async (group: ScimGroup, userId: string) => {
     try {
       await scimApi.updateGroupMember(applicationId, environmentId, group.id, { op: 'remove', userId });
-      showSuccess('Utente rimosso dal gruppo');
+      showSuccess('User removed from group');
       loadGroups();
     } catch (err) {
       showError(describeError(err));
@@ -108,7 +108,7 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
   return (
     <div>
       <div className="tab-toolbar">
-        <button onClick={() => setShowForm((v) => !v)}>{showForm ? 'Annulla' : 'Nuovo gruppo'}</button>
+        <button onClick={() => setShowForm((v) => !v)}>{showForm ? 'Cancel' : 'New group'}</button>
         <button
           className="secondary"
           onClick={() => {
@@ -116,31 +116,31 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
             loadUsers();
           }}
         >
-          Aggiorna
+          Refresh
         </button>
       </div>
 
       {showForm && (
         <form className="card-form" onSubmit={handleCreateGroup}>
-          <h3>Nuovo gruppo</h3>
+          <h3>New group</h3>
           <label>
-            Nome gruppo
+            Group name
             <input required value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
           </label>
           <div className="form-actions">
-            <button type="submit">Crea gruppo</button>
+            <button type="submit">Create group</button>
           </div>
         </form>
       )}
 
       {loading ? (
-        <p>Caricamento...</p>
+        <p>Loading...</p>
       ) : (
         <table className="data-table">
           <thead>
             <tr>
-              <th>Nome gruppo</th>
-              <th>Membri</th>
+              <th>Group name</th>
+              <th>Members</th>
               <th></th>
             </tr>
           </thead>
@@ -152,10 +152,10 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
                   <td>{group.members?.length ?? 0}</td>
                   <td className="actions">
                     <button onClick={() => toggleMembers(group)}>
-                      {expandedGroupId === group.id ? 'Chiudi membri' : 'Gestisci membri'}
+                      {expandedGroupId === group.id ? 'Close members' : 'Manage members'}
                     </button>
                     <button className="danger" onClick={() => handleDeleteGroup(group)}>
-                      Elimina
+                      Delete
                     </button>
                   </td>
                 </tr>
@@ -163,21 +163,21 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
                   <tr key={`${group.id}-members`}>
                     <td colSpan={3}>
                       <div className="nested-panel">
-                        <h4>Membri di {group.displayName}</h4>
+                        <h4>Members of {group.displayName}</h4>
                         <ul className="member-list">
                           {(group.members ?? []).map((member) => (
                             <li key={member.value}>
                               {formatMemberLabel(member, usersById)}
                               <button className="danger small" onClick={() => handleRemoveMember(group, member.value)}>
-                                Rimuovi
+                                Remove
                               </button>
                             </li>
                           ))}
-                          {(group.members ?? []).length === 0 && <li>Nessun membro.</li>}
+                          {(group.members ?? []).length === 0 && <li>No members.</li>}
                         </ul>
                         <div className="add-member-row">
                           <select value={addUserId} onChange={(e) => setAddUserId(e.target.value)}>
-                            <option value="">-- seleziona utente --</option>
+                            <option value="">-- select user --</option>
                             {users.map((user) => (
                               <option key={user.id} value={user.id}>
                                 {formatUserLabel(user)}
@@ -185,7 +185,7 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
                             ))}
                           </select>
                           <button onClick={() => handleAddMember(group)} disabled={!addUserId}>
-                            Aggiungi al gruppo
+                            Add to group
                           </button>
                         </div>
                       </div>
@@ -196,7 +196,7 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
             ))}
             {groups.length === 0 && (
               <tr>
-                <td colSpan={3}>Nessun gruppo trovato.</td>
+                <td colSpan={3}>No groups found.</td>
               </tr>
             )}
           </tbody>

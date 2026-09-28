@@ -1,47 +1,47 @@
 # SCIM Viewer
 
-Web app per amministrare utenti e gruppi tramite SCIM API di più applicazioni, su più
-ambienti (dev/pre/prod), autenticandosi verso l'Identity Provider con OpenID Connect
-**client-credentials** flow.
+Web app to administer users and groups through the SCIM APIs of multiple applications,
+across multiple environments (dev/pre/prod), authenticating against the Identity
+Provider with the OpenID Connect **client-credentials** flow.
 
-## Architettura
+## Architecture
 
-Poiché il client secret non può essere gestito in sicurezza in un frontend puro
-(sarebbe visibile a chiunque apra il browser), l'app è composta da due parti:
+Since a client secret cannot be handled securely in a pure frontend (it would be
+visible to anyone opening the browser), the app is made of two parts:
 
-- **`backend/`** — Node.js + TypeScript + Express. Espone API REST che:
-  - gestiscono l'anagrafica di Ambienti, Applicazioni e delle Configurazioni
-    applicazione+ambiente (client id, client secret, SCIM base URL), salvate in un
-    database **SQLite** locale (`backend/data/scim-viewer.db`);
-  - ottengono il token OAuth2 client-credentials dal Token Endpoint dell'ambiente
-    selezionato (con cache in memoria fino a scadenza) e lo usano per proxare le
-    chiamate SCIM (Users/Groups) verso l'applicazione selezionata.
-- **`frontend/`** — React + TypeScript + Vite (SPA). Parla solo con il backend
-  (mai direttamente con l'IdP o con le SCIM API) e permette di:
-  - gestire l'anagrafica **Ambienti** (nome, Token Endpoint OIDC, scope di default);
-  - gestire l'anagrafica **Applicazioni** e, per ognuna, le configurazioni per
-    ambiente (client id, client secret, SCIM base URL, scope opzionale);
-  - selezionare **Ambiente + Applicazione** attivi e da lì visualizzare/creare/eliminare
-    **utenti** e **gruppi**, e aggiungere/rimuovere utenti dai gruppi.
+- **`backend/`** — Node.js + TypeScript + Express. Exposes REST APIs that:
+  - manage the registry of Environments, Applications and the per
+    application+environment Configurations (client id, client secret, SCIM base URL),
+    stored in a local **SQLite** database (`backend/data/scim-viewer.db`);
+  - obtain the OAuth2 client-credentials token from the Token Endpoint of the
+    selected environment (cached in memory until expiry) and use it to proxy SCIM
+    calls (Users/Groups) to the selected application.
+- **`frontend/`** — React + TypeScript + Vite (SPA). Talks only to the backend
+  (never directly to the IdP or the SCIM APIs) and lets you:
+  - manage the **Environments** registry (name, OIDC Token Endpoint, default scope);
+  - manage the **Applications** registry and, for each one, the per-environment
+    configurations (client id, client secret, SCIM base URL, optional scope);
+  - select the active **Environment + Application** and from there view/create/delete
+    **users** and **groups**, and add/remove users from groups.
 
-> Nota: per decisione esplicita, i client secret sono salvati **in chiaro** nel
-> database SQLite e l'app non ha un proprio login: è pensata per uso interno/locale
-> su una macchina/rete fidata.
+> Note: by explicit decision, client secrets are stored **in clear text** in the
+> SQLite database and the app has no login of its own: it is intended for
+> internal/local use on a trusted machine/network.
 
-## Modello dati
+## Data model
 
-- `environments`: `name`, `tokenEndpoint`, `scope` (default per l'ambiente)
+- `environments`: `name`, `tokenEndpoint`, `scope` (default for the environment)
 - `applications`: `name`, `description`
-- `app_environment_configs` (per coppia applicazione+ambiente): `clientId`,
-  `clientSecret`, `scimBaseUrl`, `scope` (opzionale, sovrascrive quello dell'ambiente)
+- `app_environment_configs` (per application+environment pair): `clientId`,
+  `clientSecret`, `scimBaseUrl`, `scope` (optional, overrides the environment's scope)
 
-## Requisiti
+## Requirements
 
-- Node.js 18+ (verificato con Node 20)
+- Node.js 18+ (verified with Node 20)
 
-## Avvio in sviluppo
+## Running in development
 
-Backend (porta 4000):
+Backend (port 4000):
 
 ```powershell
 cd backend
@@ -49,7 +49,7 @@ npm install
 npm run dev
 ```
 
-Frontend (porta 5173, con proxy verso il backend per le chiamate `/api`):
+Frontend (port 5173, proxying `/api` calls to the backend):
 
 ```powershell
 cd frontend
@@ -57,50 +57,50 @@ npm install
 npm run dev
 ```
 
-Apri quindi `http://localhost:5173`.
+Then open `http://localhost:5173`.
 
-## Build di produzione
+## Production build
 
 ```powershell
 cd backend
 npm run build
-npm start        # avvia dist/server.js su http://localhost:4000
+npm start        # starts dist/server.js on http://localhost:4000
 
 cd ../frontend
-npm run build     # genera frontend/dist, da servire con un web server statico
-                   # a scelta (proxando /api verso il backend)
+npm run build     # generates frontend/dist, to be served with any static web
+                   # server of your choice (proxying /api to the backend)
 ```
 
-## Utilizzo
+## Usage
 
-1. Vai su **Ambienti** e crea almeno un ambiente (es. `dev`) indicando il Token
-   Endpoint OIDC del relativo Identity Provider (e, opzionalmente, uno scope di
-   default).
-2. Vai su **Applicazioni**, crea un'applicazione e, tramite "Configurazioni per
-   ambiente", aggiungi per ogni ambiente in cui l'applicazione è raggiungibile il
-   client id, il client secret e la SCIM base URL da usare.
-3. Nella pagina **Utenti & Gruppi**, seleziona in alto l'ambiente e l'applicazione
-   con cui vuoi operare: potrai visualizzare, creare ed eliminare utenti e gruppi, e
-   gestire l'appartenenza degli utenti ai gruppi.
+1. Go to **Environments** and create at least one environment (e.g. `dev`)
+   specifying the OIDC Token Endpoint of the relevant Identity Provider (and,
+   optionally, a default scope).
+2. Go to **Applications**, create an application and, via "Environment
+   configurations", add for each environment where the application is reachable
+   the client id, client secret and SCIM base URL to use.
+3. On the **Users & Groups** page, select the environment and application you want
+   to work with from the bar at the top: you can view, create and delete users and
+   groups, and manage group membership.
 
-Eventuali errori di autenticazione OIDC (es. token endpoint non raggiungibile,
-client id/secret errati) o di chiamata alle SCIM API vengono mostrati come notifiche
-(toast) con il dettaglio restituito dall'IdP o dalle API.
+Any OIDC authentication errors (e.g. unreachable token endpoint, wrong client
+id/secret) or SCIM API call errors are shown as notifications (toasts) with the
+detail returned by the IdP or the API.
 
-## Struttura del progetto
+## Project structure
 
 ```
 scim-viewer/
   backend/
     src/
-      db/            # schema SQLite + repository (environments, applications, configs)
-      routes/         # route Express (environments, applications, scim)
-      services/       # tokenService (OIDC client-credentials) e scimClient (proxy SCIM)
+      db/            # SQLite schema + repositories (environments, applications, configs)
+      routes/         # Express routes (environments, applications, scim)
+      services/       # tokenService (OIDC client-credentials) and scimClient (SCIM proxy)
       app.ts, server.ts
   frontend/
     src/
-      api/            # client REST verso il backend
-      components/     # Layout, selettore Ambiente/Applicazione, toast/notifiche
-      pages/          # Anagrafica Ambienti, Anagrafica Applicazioni, Utenti & Gruppi
+      api/            # REST client for the backend
+      components/     # Layout, Environment/Application selector, toast notifications
+      pages/          # Environments, Applications, Users & Groups
       App.tsx, main.tsx
 ```

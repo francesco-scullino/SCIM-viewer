@@ -35,10 +35,10 @@ export function EnvironmentsPage() {
       const payload = { name: form.name, tokenEndpoint: form.tokenEndpoint, scope: form.scope || undefined };
       if (form.id != null) {
         await environmentsApi.update(form.id, payload);
-        showSuccess('Ambiente aggiornato');
+        showSuccess('Environment updated');
       } else {
         await environmentsApi.create(payload);
-        showSuccess('Ambiente creato');
+        showSuccess('Environment created');
       }
       setForm(emptyForm);
       load();
@@ -52,10 +52,10 @@ export function EnvironmentsPage() {
   };
 
   const handleDelete = async (env: Environment) => {
-    if (!confirm(`Eliminare l'ambiente "${env.name}"?`)) return;
+    if (!confirm(`Delete environment "${env.name}"?`)) return;
     try {
       await environmentsApi.remove(env.id);
-      showSuccess('Ambiente eliminato');
+      showSuccess('Environment deleted');
       load();
     } catch (err) {
       showError(describeError(err));
@@ -64,16 +64,16 @@ export function EnvironmentsPage() {
 
   return (
     <section>
-      <h2>Anagrafica Ambienti</h2>
+      <h2>Environments</h2>
       <p className="hint">
-        Ogni ambiente (es. dev, pre, prod) definisce il Token Endpoint OIDC usato per ottenere il token
-        client-credentials, comune a tutte le applicazioni configurate su quell'ambiente.
+        Each environment (e.g. dev, pre, prod) defines the OIDC Token Endpoint used to obtain the
+        client-credentials token, shared by all applications configured on that environment.
       </p>
 
       <form className="card-form" onSubmit={handleSubmit}>
-        <h3>{form.id != null ? 'Modifica ambiente' : 'Nuovo ambiente'}</h3>
+        <h3>{form.id != null ? 'Edit environment' : 'New environment'}</h3>
         <label>
-          Nome
+          Name
           <input
             required
             value={form.name}
@@ -92,26 +92,26 @@ export function EnvironmentsPage() {
           />
         </label>
         <label>
-          Scope di default (opzionale)
+          Default scope (optional)
           <input value={form.scope} onChange={(e) => setForm((f) => ({ ...f, scope: e.target.value }))} />
         </label>
         <div className="form-actions">
-          <button type="submit">{form.id != null ? 'Salva modifiche' : 'Crea ambiente'}</button>
+          <button type="submit">{form.id != null ? 'Save changes' : 'Create environment'}</button>
           {form.id != null && (
             <button type="button" className="secondary" onClick={() => setForm(emptyForm)}>
-              Annulla
+              Cancel
             </button>
           )}
         </div>
       </form>
 
       {loading ? (
-        <p>Caricamento...</p>
+        <p>Loading...</p>
       ) : (
         <table className="data-table">
           <thead>
             <tr>
-              <th>Nome</th>
+              <th>Name</th>
               <th>Token Endpoint</th>
               <th>Scope</th>
               <th></th>
@@ -124,16 +124,16 @@ export function EnvironmentsPage() {
                 <td>{env.tokenEndpoint}</td>
                 <td>{env.scope || '-'}</td>
                 <td className="actions">
-                  <button onClick={() => handleEdit(env)}>Modifica</button>
+                  <button onClick={() => handleEdit(env)}>Edit</button>
                   <button className="danger" onClick={() => handleDelete(env)}>
-                    Elimina
+                    Delete
                   </button>
                 </td>
               </tr>
             ))}
             {environments.length === 0 && (
               <tr>
-                <td colSpan={4}>Nessun ambiente configurato.</td>
+                <td colSpan={4}>No environments configured.</td>
               </tr>
             )}
           </tbody>

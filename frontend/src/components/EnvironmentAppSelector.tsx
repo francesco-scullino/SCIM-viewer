@@ -24,12 +24,12 @@ export function EnvironmentAppSelector() {
   return (
     <div className="selector-bar">
       <label>
-        Ambiente
+        Environment
         <select
           value={environmentId ?? ''}
           onChange={(e) => setEnvironmentId(e.target.value ? Number(e.target.value) : null)}
         >
-          <option value="">-- seleziona --</option>
+          <option value="">-- select --</option>
           {environments.map((env) => (
             <option key={env.id} value={env.id}>
               {env.name}
@@ -38,12 +38,12 @@ export function EnvironmentAppSelector() {
         </select>
       </label>
       <label>
-        Applicazione
+        Application
         <select
           value={applicationId ?? ''}
           onChange={(e) => setApplicationId(e.target.value ? Number(e.target.value) : null)}
         >
-          <option value="">-- seleziona --</option>
+          <option value="">-- select --</option>
           {applications.map((app) => (
             <option key={app.id} value={app.id}>
               {app.name}

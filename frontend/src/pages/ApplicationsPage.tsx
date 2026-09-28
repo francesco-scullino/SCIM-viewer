@@ -62,10 +62,10 @@ export function ApplicationsPage() {
       const payload = { name: appForm.name, description: appForm.description || undefined };
       if (appForm.id != null) {
         await applicationsApi.update(appForm.id, payload);
-        showSuccess('Applicazione aggiornata');
+        showSuccess('Application updated');
       } else {
         await applicationsApi.create(payload);
-        showSuccess('Applicazione creata');
+        showSuccess('Application created');
       }
       setAppForm(emptyAppForm);
       loadApplications();
@@ -79,10 +79,10 @@ export function ApplicationsPage() {
   };
 
   const handleAppDelete = async (app: Application) => {
-    if (!confirm(`Eliminare l'applicazione "${app.name}" e tutte le sue configurazioni?`)) return;
+    if (!confirm(`Delete application "${app.name}" and all its configurations?`)) return;
     try {
       await applicationsApi.remove(app.id);
-      showSuccess('Applicazione eliminata');
+      showSuccess('Application deleted');
       if (expandedAppId === app.id) setExpandedAppId(null);
       loadApplications();
     } catch (err) {
@@ -113,10 +113,10 @@ export function ApplicationsPage() {
       };
       if (configForm.id != null) {
         await applicationsApi.updateConfig(expandedAppId, configForm.id, payload);
-        showSuccess('Configurazione aggiornata');
+        showSuccess('Configuration updated');
       } else {
         await applicationsApi.createConfig(expandedAppId, payload);
-        showSuccess('Configurazione creata');
+        showSuccess('Configuration created');
       }
       setConfigForm(emptyConfigForm);
       loadConfigs(expandedAppId);
@@ -138,10 +138,10 @@ export function ApplicationsPage() {
 
   const handleConfigDelete = async (config: AppEnvironmentConfig) => {
     if (expandedAppId == null) return;
-    if (!confirm('Eliminare questa configurazione?')) return;
+    if (!confirm('Delete this configuration?')) return;
     try {
       await applicationsApi.removeConfig(expandedAppId, config.id);
-      showSuccess('Configurazione eliminata');
+      showSuccess('Configuration deleted');
       loadConfigs(expandedAppId);
     } catch (err) {
       showError(describeError(err));
@@ -150,30 +150,30 @@ export function ApplicationsPage() {
 
   return (
     <section>
-      <h2>Anagrafica Applicazioni</h2>
+      <h2>Applications</h2>
       <p className="hint">
-        Per ogni applicazione puoi definire, per ciascun ambiente, il client id, il client secret e la SCIM
-        base URL usati per autenticarsi e chiamare le relative API SCIM.
+        For each application you can define, per environment, the client id, client secret and SCIM
+        base URL used to authenticate and call its SCIM API.
       </p>
 
       <form className="card-form" onSubmit={handleAppSubmit}>
-        <h3>{appForm.id != null ? 'Modifica applicazione' : 'Nuova applicazione'}</h3>
+        <h3>{appForm.id != null ? 'Edit application' : 'New application'}</h3>
         <label>
-          Nome
+          Name
           <input required value={appForm.name} onChange={(e) => setAppForm((f) => ({ ...f, name: e.target.value }))} />
         </label>
         <label>
-          Descrizione (opzionale)
+          Description (optional)
           <input
             value={appForm.description}
             onChange={(e) => setAppForm((f) => ({ ...f, description: e.target.value }))}
           />
         </label>
         <div className="form-actions">
-          <button type="submit">{appForm.id != null ? 'Salva modifiche' : 'Crea applicazione'}</button>
+          <button type="submit">{appForm.id != null ? 'Save changes' : 'Create application'}</button>
           {appForm.id != null && (
             <button type="button" className="secondary" onClick={() => setAppForm(emptyAppForm)}>
-              Annulla
+              Cancel
             </button>
           )}
         </div>
@@ -182,8 +182,8 @@ export function ApplicationsPage() {
       <table className="data-table">
         <thead>
           <tr>
-            <th>Nome</th>
-            <th>Descrizione</th>
+            <th>Name</th>
+            <th>Description</th>
             <th></th>
           </tr>
         </thead>
@@ -195,11 +195,11 @@ export function ApplicationsPage() {
                 <td>{app.description || '-'}</td>
                 <td className="actions">
                   <button onClick={() => toggleConfigs(app)}>
-                    {expandedAppId === app.id ? 'Chiudi configurazioni' : 'Configurazioni per ambiente'}
+                    {expandedAppId === app.id ? 'Close configurations' : 'Environment configurations'}
                   </button>
-                  <button onClick={() => handleAppEdit(app)}>Modifica</button>
+                  <button onClick={() => handleAppEdit(app)}>Edit</button>
                   <button className="danger" onClick={() => handleAppDelete(app)}>
-                    Elimina
+                    Delete
                   </button>
                 </td>
               </tr>
@@ -208,16 +208,16 @@ export function ApplicationsPage() {
                   <td colSpan={3}>
                     <div className="nested-panel">
                       <form className="card-form" onSubmit={handleConfigSubmit}>
-                        <h4>{configForm.id != null ? 'Modifica configurazione' : 'Nuova configurazione'}</h4>
+                        <h4>{configForm.id != null ? 'Edit configuration' : 'New configuration'}</h4>
                         <label>
-                          Ambiente
+                          Environment
                           <select
                             required
                             value={configForm.environmentId}
                             onChange={(e) => setConfigForm((f) => ({ ...f, environmentId: e.target.value }))}
                             disabled={configForm.id != null}
                           >
-                            <option value="">-- seleziona --</option>
+                            <option value="">-- select --</option>
                             {environments.map((env) => (
                               <option key={env.id} value={env.id}>
                                 {env.name}
@@ -253,17 +253,17 @@ export function ApplicationsPage() {
                           />
                         </label>
                         <label>
-                          Scope (opzionale, sovrascrive quello dell'ambiente)
+                          Scope (optional, overrides the environment's scope)
                           <input
                             value={configForm.scope}
                             onChange={(e) => setConfigForm((f) => ({ ...f, scope: e.target.value }))}
                           />
                         </label>
                         <div className="form-actions">
-                          <button type="submit">{configForm.id != null ? 'Salva modifiche' : 'Aggiungi'}</button>
+                          <button type="submit">{configForm.id != null ? 'Save changes' : 'Add'}</button>
                           {configForm.id != null && (
                             <button type="button" className="secondary" onClick={() => setConfigForm(emptyConfigForm)}>
-                              Annulla
+                              Cancel
                             </button>
                           )}
                         </div>
@@ -272,7 +272,7 @@ export function ApplicationsPage() {
                       <table className="data-table">
                         <thead>
                           <tr>
-                            <th>Ambiente</th>
+                            <th>Environment</th>
                             <th>Client ID</th>
                             <th>SCIM Base URL</th>
                             <th></th>
@@ -285,16 +285,16 @@ export function ApplicationsPage() {
                               <td>{config.clientId}</td>
                               <td>{config.scimBaseUrl}</td>
                               <td className="actions">
-                                <button onClick={() => handleConfigEdit(config)}>Modifica</button>
+                                <button onClick={() => handleConfigEdit(config)}>Edit</button>
                                 <button className="danger" onClick={() => handleConfigDelete(config)}>
-                                  Elimina
+                                  Delete
                                 </button>
                               </td>
                             </tr>
                           ))}
                           {configs.length === 0 && (
                             <tr>
-                              <td colSpan={4}>Nessuna configurazione per questa applicazione.</td>
+                              <td colSpan={4}>No configuration for this application yet.</td>
                             </tr>
                           )}
                         </tbody>
@@ -307,7 +307,7 @@ export function ApplicationsPage() {
           ))}
           {applications.length === 0 && (
             <tr>
-              <td colSpan={3}>Nessuna applicazione configurata.</td>
+              <td colSpan={3}>No applications configured.</td>
             </tr>
           )}
         </tbody>
