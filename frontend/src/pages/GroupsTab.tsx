@@ -1,7 +1,9 @@
-import { Fragment, FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { scimApi } from '../api/scim';
 import { ScimGroup, ScimGroupMemberRef, ScimUser } from '../api/types';
 import { useToast, describeError } from '../components/ToastContext';
+import { GroupDrawer } from '../components/GroupDrawer';
+import { GroupMembersDrawer } from '../components/GroupMembersDrawer';
 
 function formatMemberLabel(member: ScimGroupMemberRef, usersById: Map<string, ScimUser>): string {
   const user = usersById.get(member.value);
@@ -23,9 +25,9 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
   const [groups, setGroups] = useState<ScimGroup[]>([]);
   const [users, setUsers] = useState<ScimUser[]>([]);
   const [loading, setLoading] = useState(false);
-  const [showForm, setShowForm] = useState(false);
+  const [groupDrawerOpen, setGroupDrawerOpen] = useState(false);
   const [displayName, setDisplayName] = useState('');
-  const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
+  const [membersGroupId, setMembersGroupId] = useState<string | null>(null);
   const [addUserId, setAddUserId] = useState('');
   const { showError, showSuccess } = useToast();
 
@@ -57,7 +59,7 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
       await scimApi.createGroup(applicationId, environmentId, { displayName });
       showSuccess('Group created');
       setDisplayName('');
-      setShowForm(false);
+      setGroupDrawerOpen(false);
       loadGroups();
     } catch (err) {
       showError(describeError(err));
@@ -69,7 +71,7 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
     try {
       await scimApi.deleteGroup(applicationId, environmentId, group.id);
       showSuccess('Group deleted');
-      if (expandedGroupId === group.id) setExpandedGroupId(null);
+      if (membersGroupId === group.id) setMembersGroupId(null);
       loadGroups();
     } catch (err) {
       showError(describeError(err));
@@ -78,15 +80,22 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
 
   const usersById = useMemo(() => new Map(users.map((u) => [u.id, u])), [users]);
 
-  const toggleMembers = (group: ScimGroup) => {
-    setExpandedGroupId((current) => (current === group.id ? null : group.id));
+  const openMembers = (group: ScimGroup) => {
+    setMembersGroupId(group.id);
     setAddUserId('');
   };
 
-  const handleAddMember = async (group: ScimGroup) => {
-    if (!addUserId) return;
+  const closeMembers = () => {
+    setMembersGroupId(null);
+    setAddUserId('');
+  };
+
+  const membersGroup = groups.find((g) => g.id === membersGroupId) ?? null;
+
+  const handleAddMember = async () => {
+    if (!addUserId || membersGroupId == null) return;
     try {
-      await scimApi.updateGroupMember(applicationId, environmentId, group.id, { op: 'add', userId: addUserId });
+      await scimApi.updateGroupMember(applicationId, environmentId, membersGroupId, { op: 'add', userId: addUserId });
       showSuccess('User added to group');
       setAddUserId('');
       loadGroups();
@@ -95,9 +104,10 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
     }
   };
 
-  const handleRemoveMember = async (group: ScimGroup, userId: string) => {
+  const handleRemoveMember = async (userId: string) => {
+    if (membersGroupId == null) return;
     try {
-      await scimApi.updateGroupMember(applicationId, environmentId, group.id, { op: 'remove', userId });
+      await scimApi.updateGroupMember(applicationId, environmentId, membersGroupId, { op: 'remove', userId });
       showSuccess('User removed from group');
       loadGroups();
     } catch (err) {
@@ -105,10 +115,20 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
     }
   };
 
+  const handleOpenGroupDrawer = () => {
+    setDisplayName('');
+    setGroupDrawerOpen(true);
+  };
+
+  const handleCloseGroupDrawer = () => {
+    setDisplayName('');
+    setGroupDrawerOpen(false);
+  };
+
   return (
     <div>
       <div className="tab-toolbar">
-        <button onClick={() => setShowForm((v) => !v)}>{showForm ? 'Cancel' : 'New group'}</button>
+        <button onClick={handleOpenGroupDrawer}>+ New group</button>
         <button
           className="secondary"
           onClick={() => {
@@ -120,18 +140,26 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
         </button>
       </div>
 
-      {showForm && (
-        <form className="card-form" onSubmit={handleCreateGroup}>
-          <h3>New group</h3>
-          <label>
-            Group name
-            <input required value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
-          </label>
-          <div className="form-actions">
-            <button type="submit">Create group</button>
-          </div>
-        </form>
-      )}
+      <GroupDrawer
+        open={groupDrawerOpen}
+        displayName={displayName}
+        onClose={handleCloseGroupDrawer}
+        onSubmit={handleCreateGroup}
+        onChange={setDisplayName}
+      />
+
+      <GroupMembersDrawer
+        open={membersGroupId != null}
+        group={membersGroup}
+        users={users}
+        addUserId={addUserId}
+        onClose={closeMembers}
+        onAddUserIdChange={setAddUserId}
+        onAddMember={handleAddMember}
+        onRemoveMember={handleRemoveMember}
+        formatMemberLabel={(member) => formatMemberLabel(member, usersById)}
+        formatUserLabel={formatUserLabel}
+      />
 
       {loading ? (
         <p>Loading...</p>
@@ -146,53 +174,16 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
           </thead>
           <tbody>
             {groups.map((group) => (
-              <Fragment key={group.id}>
-                <tr>
-                  <td>{group.displayName}</td>
-                  <td>{group.members?.length ?? 0}</td>
-                  <td className="actions">
-                    <button onClick={() => toggleMembers(group)}>
-                      {expandedGroupId === group.id ? 'Close members' : 'Manage members'}
-                    </button>
-                    <button className="danger" onClick={() => handleDeleteGroup(group)}>
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-                {expandedGroupId === group.id && (
-                  <tr key={`${group.id}-members`}>
-                    <td colSpan={3}>
-                      <div className="nested-panel">
-                        <h4>Members of {group.displayName}</h4>
-                        <ul className="member-list">
-                          {(group.members ?? []).map((member) => (
-                            <li key={member.value}>
-                              {formatMemberLabel(member, usersById)}
-                              <button className="danger small" onClick={() => handleRemoveMember(group, member.value)}>
-                                Remove
-                              </button>
-                            </li>
-                          ))}
-                          {(group.members ?? []).length === 0 && <li>No members.</li>}
-                        </ul>
-                        <div className="add-member-row">
-                          <select value={addUserId} onChange={(e) => setAddUserId(e.target.value)}>
-                            <option value="">-- select user --</option>
-                            {users.map((user) => (
-                              <option key={user.id} value={user.id}>
-                                {formatUserLabel(user)}
-                              </option>
-                            ))}
-                          </select>
-                          <button onClick={() => handleAddMember(group)} disabled={!addUserId}>
-                            Add to group
-                          </button>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </Fragment>
+              <tr key={group.id}>
+                <td>{group.displayName}</td>
+                <td>{group.members?.length ?? 0}</td>
+                <td className="actions">
+                  <button onClick={() => openMembers(group)}>Manage members</button>
+                  <button className="danger" onClick={() => handleDeleteGroup(group)}>
+                    Delete
+                  </button>
+                </td>
+              </tr>
             ))}
             {groups.length === 0 && (
               <tr>

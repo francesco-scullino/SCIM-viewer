@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import { environmentsApi } from '../api/environments';
 import { Environment } from '../api/types';
 import { useToast, describeError } from '../components/ToastContext';
+import { EnvironmentDrawer } from '../components/EnvironmentDrawer';
 
 interface FormState {
   id: number | null;
@@ -16,6 +17,7 @@ export function EnvironmentsPage() {
   const [environments, setEnvironments] = useState<Environment[]>([]);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [loading, setLoading] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const { showError, showSuccess } = useToast();
 
   const load = () => {
@@ -41,6 +43,7 @@ export function EnvironmentsPage() {
         showSuccess('Environment created');
       }
       setForm(emptyForm);
+      setDrawerOpen(false);
       load();
     } catch (err) {
       showError(describeError(err));
@@ -49,6 +52,7 @@ export function EnvironmentsPage() {
 
   const handleEdit = (env: Environment) => {
     setForm({ id: env.id, name: env.name, tokenEndpoint: env.tokenEndpoint, scope: env.scope ?? '' });
+    setDrawerOpen(true);
   };
 
   const handleDelete = async (env: Environment) => {
@@ -62,6 +66,16 @@ export function EnvironmentsPage() {
     }
   };
 
+  const handleOpenDrawer = () => {
+    setForm(emptyForm);
+    setDrawerOpen(true);
+  };
+
+  const handleCloseDrawer = () => {
+    setForm(emptyForm);
+    setDrawerOpen(false);
+  };
+
   return (
     <section>
       <h2>Environments</h2>
@@ -70,40 +84,18 @@ export function EnvironmentsPage() {
         client-credentials token, shared by all applications configured on that environment.
       </p>
 
-      <form className="card-form" onSubmit={handleSubmit}>
-        <h3>{form.id != null ? 'Edit environment' : 'New environment'}</h3>
-        <label>
-          Name
-          <input
-            required
-            value={form.name}
-            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            placeholder="dev / pre / prod"
-          />
-        </label>
-        <label>
-          Token Endpoint
-          <input
-            required
-            type="url"
-            value={form.tokenEndpoint}
-            onChange={(e) => setForm((f) => ({ ...f, tokenEndpoint: e.target.value }))}
-            placeholder="https://idp.example.com/oauth2/token"
-          />
-        </label>
-        <label>
-          Default scope (optional)
-          <input value={form.scope} onChange={(e) => setForm((f) => ({ ...f, scope: e.target.value }))} />
-        </label>
-        <div className="form-actions">
-          <button type="submit">{form.id != null ? 'Save changes' : 'Create environment'}</button>
-          {form.id != null && (
-            <button type="button" className="secondary" onClick={() => setForm(emptyForm)}>
-              Cancel
-            </button>
-          )}
-        </div>
-      </form>
+      <div className="section-toolbar">
+        <button onClick={handleOpenDrawer}>+ New environment</button>
+      </div>
+
+      <EnvironmentDrawer
+        open={drawerOpen}
+        form={form}
+        onClose={handleCloseDrawer}
+        onSubmit={handleSubmit}
+        onChange={setForm}
+        isLoading={loading}
+      />
 
       {loading ? (
         <p>Loading...</p>

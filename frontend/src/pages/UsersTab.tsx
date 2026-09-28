@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import { scimApi } from '../api/scim';
 import { ScimUser } from '../api/types';
 import { useToast, describeError } from '../components/ToastContext';
+import { UserDrawer } from '../components/UserDrawer';
 
 interface UserFormState {
   userName: string;
@@ -22,7 +23,7 @@ export function UsersTab({ applicationId, environmentId }: Props) {
   const [users, setUsers] = useState<ScimUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState<UserFormState>(emptyForm);
-  const [showForm, setShowForm] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const { showError, showSuccess } = useToast();
 
   const load = () => {
@@ -48,7 +49,7 @@ export function UsersTab({ applicationId, environmentId }: Props) {
       });
       showSuccess('User created');
       setForm(emptyForm);
-      setShowForm(false);
+      setDrawerOpen(false);
       load();
     } catch (err) {
       showError(describeError(err));
@@ -66,47 +67,32 @@ export function UsersTab({ applicationId, environmentId }: Props) {
     }
   };
 
+  const handleOpenDrawer = () => {
+    setForm(emptyForm);
+    setDrawerOpen(true);
+  };
+
+  const handleCloseDrawer = () => {
+    setForm(emptyForm);
+    setDrawerOpen(false);
+  };
+
   return (
     <div>
       <div className="tab-toolbar">
-        <button onClick={() => setShowForm((v) => !v)}>{showForm ? 'Cancel' : 'New user'}</button>
+        <button onClick={handleOpenDrawer}>+ New user</button>
         <button className="secondary" onClick={load}>
           Refresh
         </button>
       </div>
 
-      {showForm && (
-        <form className="card-form" onSubmit={handleSubmit}>
-          <h3>New user</h3>
-          <label>
-            Username
-            <input required value={form.userName} onChange={(e) => setForm((f) => ({ ...f, userName: e.target.value }))} />
-          </label>
-          <label>
-            First name
-            <input value={form.givenName} onChange={(e) => setForm((f) => ({ ...f, givenName: e.target.value }))} />
-          </label>
-          <label>
-            Last name
-            <input value={form.familyName} onChange={(e) => setForm((f) => ({ ...f, familyName: e.target.value }))} />
-          </label>
-          <label>
-            Email
-            <input type="email" value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} />
-          </label>
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
-              checked={form.active}
-              onChange={(e) => setForm((f) => ({ ...f, active: e.target.checked }))}
-            />
-            Active
-          </label>
-          <div className="form-actions">
-            <button type="submit">Create user</button>
-          </div>
-        </form>
-      )}
+      <UserDrawer
+        open={drawerOpen}
+        form={form}
+        onClose={handleCloseDrawer}
+        onSubmit={handleSubmit}
+        onChange={setForm}
+      />
 
       {loading ? (
         <p>Loading...</p>

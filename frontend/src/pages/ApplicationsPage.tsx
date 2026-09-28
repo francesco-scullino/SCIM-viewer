@@ -1,8 +1,11 @@
-import { Fragment, FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { applicationsApi } from '../api/applications';
 import { environmentsApi } from '../api/environments';
 import { Application, AppEnvironmentConfig, Environment } from '../api/types';
 import { useToast, describeError } from '../components/ToastContext';
+import { ApplicationDrawer } from '../components/ApplicationDrawer';
+import { ApplicationConfigDrawer } from '../components/ApplicationConfigDrawer';
+import { ApplicationConfigListDrawer } from '../components/ApplicationConfigListDrawer';
 
 interface AppFormState {
   id: number | null;
@@ -34,9 +37,12 @@ export function ApplicationsPage() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [environments, setEnvironments] = useState<Environment[]>([]);
   const [appForm, setAppForm] = useState<AppFormState>(emptyAppForm);
-  const [expandedAppId, setExpandedAppId] = useState<number | null>(null);
+  const [appDrawerOpen, setAppDrawerOpen] = useState(false);
+  const [selectedAppId, setSelectedAppId] = useState<number | null>(null);
+  const [configListDrawerOpen, setConfigListDrawerOpen] = useState(false);
   const [configs, setConfigs] = useState<AppEnvironmentConfig[]>([]);
   const [configForm, setConfigForm] = useState<ConfigFormState>(emptyConfigForm);
+  const [configDrawerOpen, setConfigDrawerOpen] = useState(false);
   const { showError, showSuccess } = useToast();
 
   const loadApplications = () => {
@@ -68,6 +74,7 @@ export function ApplicationsPage() {
         showSuccess('Application created');
       }
       setAppForm(emptyAppForm);
+      setAppDrawerOpen(false);
       loadApplications();
     } catch (err) {
       showError(describeError(err));
@@ -76,6 +83,7 @@ export function ApplicationsPage() {
 
   const handleAppEdit = (app: Application) => {
     setAppForm({ id: app.id, name: app.name, description: app.description ?? '' });
+    setAppDrawerOpen(true);
   };
 
   const handleAppDelete = async (app: Application) => {
@@ -83,26 +91,40 @@ export function ApplicationsPage() {
     try {
       await applicationsApi.remove(app.id);
       showSuccess('Application deleted');
-      if (expandedAppId === app.id) setExpandedAppId(null);
+      if (selectedAppId === app.id) {
+        setSelectedAppId(null);
+        setConfigListDrawerOpen(false);
+      }
       loadApplications();
     } catch (err) {
       showError(describeError(err));
     }
   };
 
-  const toggleConfigs = (app: Application) => {
-    if (expandedAppId === app.id) {
-      setExpandedAppId(null);
-      return;
-    }
-    setExpandedAppId(app.id);
-    setConfigForm(emptyConfigForm);
+  const handleOpenAppDrawer = () => {
+    setAppForm(emptyAppForm);
+    setAppDrawerOpen(true);
+  };
+
+  const handleCloseAppDrawer = () => {
+    setAppForm(emptyAppForm);
+    setAppDrawerOpen(false);
+  };
+
+  const openConfigList = (app: Application) => {
+    setSelectedAppId(app.id);
+    setConfigListDrawerOpen(true);
     loadConfigs(app.id);
+  };
+
+  const closeConfigList = () => {
+    setConfigListDrawerOpen(false);
+    setSelectedAppId(null);
   };
 
   const handleConfigSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (expandedAppId == null) return;
+    if (selectedAppId == null) return;
     try {
       const payload = {
         environmentId: Number(configForm.environmentId),
@@ -112,14 +134,15 @@ export function ApplicationsPage() {
         scope: configForm.scope || undefined,
       };
       if (configForm.id != null) {
-        await applicationsApi.updateConfig(expandedAppId, configForm.id, payload);
+        await applicationsApi.updateConfig(selectedAppId, configForm.id, payload);
         showSuccess('Configuration updated');
       } else {
-        await applicationsApi.createConfig(expandedAppId, payload);
+        await applicationsApi.createConfig(selectedAppId, payload);
         showSuccess('Configuration created');
       }
       setConfigForm(emptyConfigForm);
-      loadConfigs(expandedAppId);
+      setConfigDrawerOpen(false);
+      loadConfigs(selectedAppId);
     } catch (err) {
       showError(describeError(err));
     }
@@ -134,19 +157,32 @@ export function ApplicationsPage() {
       scimBaseUrl: config.scimBaseUrl,
       scope: config.scope ?? '',
     });
+    setConfigDrawerOpen(true);
   };
 
   const handleConfigDelete = async (config: AppEnvironmentConfig) => {
-    if (expandedAppId == null) return;
+    if (selectedAppId == null) return;
     if (!confirm('Delete this configuration?')) return;
     try {
-      await applicationsApi.removeConfig(expandedAppId, config.id);
+      await applicationsApi.removeConfig(selectedAppId, config.id);
       showSuccess('Configuration deleted');
-      loadConfigs(expandedAppId);
+      loadConfigs(selectedAppId);
     } catch (err) {
       showError(describeError(err));
     }
   };
+
+  const handleOpenConfigDrawer = () => {
+    setConfigForm(emptyConfigForm);
+    setConfigDrawerOpen(true);
+  };
+
+  const handleCloseConfigDrawer = () => {
+    setConfigForm(emptyConfigForm);
+    setConfigDrawerOpen(false);
+  };
+
+  const selectedApp = applications.find((a) => a.id === selectedAppId) ?? null;
 
   return (
     <section>
@@ -156,28 +192,36 @@ export function ApplicationsPage() {
         base URL used to authenticate and call its SCIM API.
       </p>
 
-      <form className="card-form" onSubmit={handleAppSubmit}>
-        <h3>{appForm.id != null ? 'Edit application' : 'New application'}</h3>
-        <label>
-          Name
-          <input required value={appForm.name} onChange={(e) => setAppForm((f) => ({ ...f, name: e.target.value }))} />
-        </label>
-        <label>
-          Description (optional)
-          <input
-            value={appForm.description}
-            onChange={(e) => setAppForm((f) => ({ ...f, description: e.target.value }))}
-          />
-        </label>
-        <div className="form-actions">
-          <button type="submit">{appForm.id != null ? 'Save changes' : 'Create application'}</button>
-          {appForm.id != null && (
-            <button type="button" className="secondary" onClick={() => setAppForm(emptyAppForm)}>
-              Cancel
-            </button>
-          )}
-        </div>
-      </form>
+      <div className="section-toolbar">
+        <button onClick={handleOpenAppDrawer}>+ New application</button>
+      </div>
+
+      <ApplicationDrawer
+        open={appDrawerOpen}
+        form={appForm}
+        onClose={handleCloseAppDrawer}
+        onSubmit={handleAppSubmit}
+        onChange={setAppForm}
+      />
+
+      <ApplicationConfigListDrawer
+        open={configListDrawerOpen}
+        application={selectedApp}
+        configs={configs}
+        onClose={closeConfigList}
+        onAddNew={handleOpenConfigDrawer}
+        onEdit={handleConfigEdit}
+        onDelete={handleConfigDelete}
+      />
+
+      <ApplicationConfigDrawer
+        open={configDrawerOpen}
+        form={configForm}
+        environments={environments}
+        onClose={handleCloseConfigDrawer}
+        onSubmit={handleConfigSubmit}
+        onChange={setConfigForm}
+      />
 
       <table className="data-table">
         <thead>
@@ -189,121 +233,17 @@ export function ApplicationsPage() {
         </thead>
         <tbody>
           {applications.map((app) => (
-            <Fragment key={app.id}>
-              <tr>
-                <td>{app.name}</td>
-                <td>{app.description || '-'}</td>
-                <td className="actions">
-                  <button onClick={() => toggleConfigs(app)}>
-                    {expandedAppId === app.id ? 'Close configurations' : 'Environment configurations'}
-                  </button>
-                  <button onClick={() => handleAppEdit(app)}>Edit</button>
-                  <button className="danger" onClick={() => handleAppDelete(app)}>
-                    Delete
-                  </button>
-                </td>
-              </tr>
-              {expandedAppId === app.id && (
-                <tr key={`${app.id}-configs`}>
-                  <td colSpan={3}>
-                    <div className="nested-panel">
-                      <form className="card-form" onSubmit={handleConfigSubmit}>
-                        <h4>{configForm.id != null ? 'Edit configuration' : 'New configuration'}</h4>
-                        <label>
-                          Environment
-                          <select
-                            required
-                            value={configForm.environmentId}
-                            onChange={(e) => setConfigForm((f) => ({ ...f, environmentId: e.target.value }))}
-                            disabled={configForm.id != null}
-                          >
-                            <option value="">-- select --</option>
-                            {environments.map((env) => (
-                              <option key={env.id} value={env.id}>
-                                {env.name}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                        <label>
-                          Client ID
-                          <input
-                            required
-                            value={configForm.clientId}
-                            onChange={(e) => setConfigForm((f) => ({ ...f, clientId: e.target.value }))}
-                          />
-                        </label>
-                        <label>
-                          Client Secret
-                          <input
-                            required
-                            type="password"
-                            value={configForm.clientSecret}
-                            onChange={(e) => setConfigForm((f) => ({ ...f, clientSecret: e.target.value }))}
-                          />
-                        </label>
-                        <label>
-                          SCIM Base URL
-                          <input
-                            required
-                            type="url"
-                            value={configForm.scimBaseUrl}
-                            onChange={(e) => setConfigForm((f) => ({ ...f, scimBaseUrl: e.target.value }))}
-                            placeholder="https://scim.example.com/v2"
-                          />
-                        </label>
-                        <label>
-                          Scope (optional, overrides the environment's scope)
-                          <input
-                            value={configForm.scope}
-                            onChange={(e) => setConfigForm((f) => ({ ...f, scope: e.target.value }))}
-                          />
-                        </label>
-                        <div className="form-actions">
-                          <button type="submit">{configForm.id != null ? 'Save changes' : 'Add'}</button>
-                          {configForm.id != null && (
-                            <button type="button" className="secondary" onClick={() => setConfigForm(emptyConfigForm)}>
-                              Cancel
-                            </button>
-                          )}
-                        </div>
-                      </form>
-
-                      <table className="data-table">
-                        <thead>
-                          <tr>
-                            <th>Environment</th>
-                            <th>Client ID</th>
-                            <th>SCIM Base URL</th>
-                            <th></th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {configs.map((config) => (
-                            <tr key={config.id}>
-                              <td>{config.environmentName}</td>
-                              <td>{config.clientId}</td>
-                              <td>{config.scimBaseUrl}</td>
-                              <td className="actions">
-                                <button onClick={() => handleConfigEdit(config)}>Edit</button>
-                                <button className="danger" onClick={() => handleConfigDelete(config)}>
-                                  Delete
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                          {configs.length === 0 && (
-                            <tr>
-                              <td colSpan={4}>No configuration for this application yet.</td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
-                  </td>
-                </tr>
-              )}
-            </Fragment>
+            <tr key={app.id}>
+              <td>{app.name}</td>
+              <td>{app.description || '-'}</td>
+              <td className="actions">
+                <button onClick={() => openConfigList(app)}>Configurations</button>
+                <button onClick={() => handleAppEdit(app)}>Edit</button>
+                <button className="danger" onClick={() => handleAppDelete(app)}>
+                  Delete
+                </button>
+              </td>
+            </tr>
           ))}
           {applications.length === 0 && (
             <tr>
