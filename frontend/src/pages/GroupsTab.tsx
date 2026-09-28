@@ -1,7 +1,9 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { PlusOutlined, ReloadOutlined, TeamOutlined, DeleteOutlined } from '@ant-design/icons';
+import { PlusOutlined, ReloadOutlined, TeamOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
+import { Input } from 'antd';
 import { scimApi } from '../api/scim';
 import { ScimGroup, ScimGroupMemberRef, ScimUser } from '../api/types';
+import { buildStartsWithFilter } from '../api/scimFilter';
 import { useToast, describeError } from '../components/ToastContext';
 import { GroupDrawer } from '../components/GroupDrawer';
 import { GroupMembersDrawer } from '../components/GroupMembersDrawer';
@@ -33,12 +35,13 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
   const [displayName, setDisplayName] = useState('');
   const [membersGroupId, setMembersGroupId] = useState<string | null>(null);
   const [addUserId, setAddUserId] = useState('');
+  const [search, setSearch] = useState('');
   const { showError, showSuccess } = useToast();
 
-  const loadGroups = () => {
+  const loadGroups = (searchTerm: string) => {
     setLoading(true);
     scimApi
-      .listGroups(applicationId, environmentId)
+      .listGroups(applicationId, environmentId, buildStartsWithFilter('displayName', searchTerm))
       .then((res) => setGroups(res.Resources ?? []))
       .catch((err) => showError(describeError(err)))
       .finally(() => setLoading(false));
@@ -52,10 +55,17 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
   };
 
   useEffect(() => {
-    loadGroups();
+    setSearch('');
+    loadGroups('');
     loadUsers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [applicationId, environmentId]);
+
+  useEffect(() => {
+    const handle = setTimeout(() => loadGroups(search), 350);
+    return () => clearTimeout(handle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
 
   const handleCreateGroup = async (e: FormEvent) => {
     e.preventDefault();
@@ -65,7 +75,7 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
       showSuccess('Group created');
       setDisplayName('');
       setGroupDrawerOpen(false);
-      loadGroups();
+      loadGroups(search);
     } catch (err) {
       showError(describeError(err));
     } finally {
@@ -79,7 +89,7 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
       await scimApi.deleteGroup(applicationId, environmentId, group.id);
       showSuccess('Group deleted');
       if (membersGroupId === group.id) setMembersGroupId(null);
-      loadGroups();
+      loadGroups(search);
     } catch (err) {
       showError(describeError(err));
     }
@@ -105,7 +115,7 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
       await scimApi.updateGroupMember(applicationId, environmentId, membersGroupId, { op: 'add', userId: addUserId });
       showSuccess('User added to group');
       setAddUserId('');
-      loadGroups();
+      loadGroups(search);
     } catch (err) {
       showError(describeError(err));
     }
@@ -116,7 +126,7 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
     try {
       await scimApi.updateGroupMember(applicationId, environmentId, membersGroupId, { op: 'remove', userId });
       showSuccess('User removed from group');
-      loadGroups();
+      loadGroups(search);
     } catch (err) {
       showError(describeError(err));
     }
@@ -140,9 +150,17 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
           icon={<ReloadOutlined />}
           label="Refresh"
           onClick={() => {
-            loadGroups();
+            loadGroups(search);
             loadUsers();
           }}
+        />
+        <Input
+          allowClear
+          placeholder="Search by group name"
+          prefix={<SearchOutlined />}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="search-input"
         />
       </div>
 

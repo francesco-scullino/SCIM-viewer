@@ -300,6 +300,11 @@ button:disabled {
   margin-bottom: 1rem;
 }
 
+.search-input {
+  max-width: 280px;
+  margin-left: 0.5rem;
+}
+
 .member-list {
   list-style: none;
   padding: 0;

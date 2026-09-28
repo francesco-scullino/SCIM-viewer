@@ -1,7 +1,9 @@
 import { FormEvent, useEffect, useState } from 'react';
-import { PlusOutlined, ReloadOutlined, DeleteOutlined } from '@ant-design/icons';
+import { PlusOutlined, ReloadOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
+import { Input } from 'antd';
 import { scimApi } from '../api/scim';
 import { ScimUser } from '../api/types';
+import { buildStartsWithFilter } from '../api/scimFilter';
 import { useToast, describeError } from '../components/ToastContext';
 import { UserDrawer } from '../components/UserDrawer';
 import { IconButton } from '../components/IconButton';
@@ -28,18 +30,29 @@ export function UsersTab({ applicationId, environmentId }: Props) {
   const [form, setForm] = useState<UserFormState>(emptyForm);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [search, setSearch] = useState('');
   const { showError, showSuccess } = useToast();
 
-  const load = () => {
+  const load = (searchTerm: string) => {
     setLoading(true);
     scimApi
-      .listUsers(applicationId, environmentId)
+      .listUsers(applicationId, environmentId, buildStartsWithFilter('userName', searchTerm))
       .then((res) => setUsers(res.Resources ?? []))
       .catch((err) => showError(describeError(err)))
       .finally(() => setLoading(false));
   };
 
-  useEffect(load, [applicationId, environmentId]);
+  useEffect(() => {
+    setSearch('');
+    load('');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [applicationId, environmentId]);
+
+  useEffect(() => {
+    const handle = setTimeout(() => load(search), 350);
+    return () => clearTimeout(handle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -55,7 +68,7 @@ export function UsersTab({ applicationId, environmentId }: Props) {
       showSuccess('User created');
       setForm(emptyForm);
       setDrawerOpen(false);
-      load();
+      load(search);
     } catch (err) {
       showError(describeError(err));
     } finally {
@@ -68,7 +81,7 @@ export function UsersTab({ applicationId, environmentId }: Props) {
     try {
       await scimApi.deleteUser(applicationId, environmentId, user.id);
       showSuccess('User deleted');
-      load();
+      load(search);
     } catch (err) {
       showError(describeError(err));
     }
@@ -88,7 +101,15 @@ export function UsersTab({ applicationId, environmentId }: Props) {
     <div>
       <div className="tab-toolbar">
         <IconButton icon={<PlusOutlined />} label="New user" onClick={handleOpenDrawer} />
-        <IconButton icon={<ReloadOutlined />} label="Refresh" onClick={load} />
+        <IconButton icon={<ReloadOutlined />} label="Refresh" onClick={() => load(search)} />
+        <Input
+          allowClear
+          placeholder="Search by username"
+          prefix={<SearchOutlined />}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="search-input"
+        />
       </div>
 
       <UserDrawer
