@@ -1,5 +1,6 @@
 import { Drawer } from 'antd';
 import { FormEvent } from 'react';
+import { SubmitButton } from './SubmitButton';
 
 interface EnvironmentFormState {
   id: number | null;
@@ -48,9 +49,7 @@ export function EnvironmentDrawer({ open, form, onClose, onSubmit, onChange, isL
         </label>
 
         <div className="drawer-actions">
-          <button type="submit" disabled={isLoading}>
-            {form.id != null ? 'Save changes' : 'Create environment'}
-          </button>
+          <SubmitButton loading={isLoading}>{form.id != null ? 'Save changes' : 'Create environment'}</SubmitButton>
           <button type="button" className="secondary" onClick={onClose}>
             Cancel
           </button>

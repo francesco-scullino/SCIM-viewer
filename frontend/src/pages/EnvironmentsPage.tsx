@@ -1,8 +1,11 @@
 import { FormEvent, useEffect, useState } from 'react';
+import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { environmentsApi } from '../api/environments';
 import { Environment } from '../api/types';
 import { useToast, describeError } from '../components/ToastContext';
 import { EnvironmentDrawer } from '../components/EnvironmentDrawer';
+import { IconButton } from '../components/IconButton';
+import { Loader } from '../components/Loader';
 
 interface FormState {
   id: number | null;
@@ -17,6 +20,7 @@ export function EnvironmentsPage() {
   const [environments, setEnvironments] = useState<Environment[]>([]);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { showError, showSuccess } = useToast();
 
@@ -33,6 +37,7 @@ export function EnvironmentsPage() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setSubmitting(true);
     try {
       const payload = { name: form.name, tokenEndpoint: form.tokenEndpoint, scope: form.scope || undefined };
       if (form.id != null) {
@@ -47,6 +52,8 @@ export function EnvironmentsPage() {
       load();
     } catch (err) {
       showError(describeError(err));
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -85,7 +92,7 @@ export function EnvironmentsPage() {
       </p>
 
       <div className="section-toolbar">
-        <button onClick={handleOpenDrawer}>+ New environment</button>
+        <IconButton icon={<PlusOutlined />} label="New environment" onClick={handleOpenDrawer} />
       </div>
 
       <EnvironmentDrawer
@@ -94,11 +101,11 @@ export function EnvironmentsPage() {
         onClose={handleCloseDrawer}
         onSubmit={handleSubmit}
         onChange={setForm}
-        isLoading={loading}
+        isLoading={submitting}
       />
 
       {loading ? (
-        <p>Loading...</p>
+        <Loader />
       ) : (
         <table className="data-table">
           <thead>
@@ -116,10 +123,8 @@ export function EnvironmentsPage() {
                 <td>{env.tokenEndpoint}</td>
                 <td>{env.scope || '-'}</td>
                 <td className="actions">
-                  <button onClick={() => handleEdit(env)}>Edit</button>
-                  <button className="danger" onClick={() => handleDelete(env)}>
-                    Delete
-                  </button>
+                  <IconButton icon={<EditOutlined />} label="Edit" onClick={() => handleEdit(env)} />
+                  <IconButton icon={<DeleteOutlined />} label="Delete" danger onClick={() => handleDelete(env)} />
                 </td>
               </tr>
             ))}

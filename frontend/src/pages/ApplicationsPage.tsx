@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useState } from 'react';
+import { PlusOutlined, EditOutlined, DeleteOutlined, SettingOutlined } from '@ant-design/icons';
 import { applicationsApi } from '../api/applications';
 import { environmentsApi } from '../api/environments';
 import { Application, AppEnvironmentConfig, Environment } from '../api/types';
@@ -6,6 +7,8 @@ import { useToast, describeError } from '../components/ToastContext';
 import { ApplicationDrawer } from '../components/ApplicationDrawer';
 import { ApplicationConfigDrawer } from '../components/ApplicationConfigDrawer';
 import { ApplicationConfigListDrawer } from '../components/ApplicationConfigListDrawer';
+import { IconButton } from '../components/IconButton';
+import { Loader } from '../components/Loader';
 
 interface AppFormState {
   id: number | null;
@@ -35,18 +38,27 @@ const emptyConfigForm: ConfigFormState = {
 
 export function ApplicationsPage() {
   const [applications, setApplications] = useState<Application[]>([]);
+  const [applicationsLoading, setApplicationsLoading] = useState(false);
   const [environments, setEnvironments] = useState<Environment[]>([]);
   const [appForm, setAppForm] = useState<AppFormState>(emptyAppForm);
   const [appDrawerOpen, setAppDrawerOpen] = useState(false);
+  const [appSubmitting, setAppSubmitting] = useState(false);
   const [selectedAppId, setSelectedAppId] = useState<number | null>(null);
   const [configListDrawerOpen, setConfigListDrawerOpen] = useState(false);
   const [configs, setConfigs] = useState<AppEnvironmentConfig[]>([]);
+  const [configsLoading, setConfigsLoading] = useState(false);
   const [configForm, setConfigForm] = useState<ConfigFormState>(emptyConfigForm);
   const [configDrawerOpen, setConfigDrawerOpen] = useState(false);
+  const [configSubmitting, setConfigSubmitting] = useState(false);
   const { showError, showSuccess } = useToast();
 
   const loadApplications = () => {
-    applicationsApi.list().then(setApplications).catch((err) => showError(describeError(err)));
+    setApplicationsLoading(true);
+    applicationsApi
+      .list()
+      .then(setApplications)
+      .catch((err) => showError(describeError(err)))
+      .finally(() => setApplicationsLoading(false));
   };
 
   useEffect(() => {
@@ -56,14 +68,17 @@ export function ApplicationsPage() {
   }, []);
 
   const loadConfigs = (applicationId: number) => {
+    setConfigsLoading(true);
     applicationsApi
       .listConfigs(applicationId)
       .then(setConfigs)
-      .catch((err) => showError(describeError(err)));
+      .catch((err) => showError(describeError(err)))
+      .finally(() => setConfigsLoading(false));
   };
 
   const handleAppSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setAppSubmitting(true);
     try {
       const payload = { name: appForm.name, description: appForm.description || undefined };
       if (appForm.id != null) {
@@ -78,6 +93,8 @@ export function ApplicationsPage() {
       loadApplications();
     } catch (err) {
       showError(describeError(err));
+    } finally {
+      setAppSubmitting(false);
     }
   };
 
@@ -125,6 +142,7 @@ export function ApplicationsPage() {
   const handleConfigSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (selectedAppId == null) return;
+    setConfigSubmitting(true);
     try {
       const payload = {
         environmentId: Number(configForm.environmentId),
@@ -145,6 +163,8 @@ export function ApplicationsPage() {
       loadConfigs(selectedAppId);
     } catch (err) {
       showError(describeError(err));
+    } finally {
+      setConfigSubmitting(false);
     }
   };
 
@@ -193,7 +213,7 @@ export function ApplicationsPage() {
       </p>
 
       <div className="section-toolbar">
-        <button onClick={handleOpenAppDrawer}>+ New application</button>
+        <IconButton icon={<PlusOutlined />} label="New application" onClick={handleOpenAppDrawer} />
       </div>
 
       <ApplicationDrawer
@@ -202,12 +222,14 @@ export function ApplicationsPage() {
         onClose={handleCloseAppDrawer}
         onSubmit={handleAppSubmit}
         onChange={setAppForm}
+        isLoading={appSubmitting}
       />
 
       <ApplicationConfigListDrawer
         open={configListDrawerOpen}
         application={selectedApp}
         configs={configs}
+        loading={configsLoading}
         onClose={closeConfigList}
         onAddNew={handleOpenConfigDrawer}
         onEdit={handleConfigEdit}
@@ -221,37 +243,40 @@ export function ApplicationsPage() {
         onClose={handleCloseConfigDrawer}
         onSubmit={handleConfigSubmit}
         onChange={setConfigForm}
+        isLoading={configSubmitting}
       />
 
-      <table className="data-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {applications.map((app) => (
-            <tr key={app.id}>
-              <td>{app.name}</td>
-              <td>{app.description || '-'}</td>
-              <td className="actions">
-                <button onClick={() => openConfigList(app)}>Configurations</button>
-                <button onClick={() => handleAppEdit(app)}>Edit</button>
-                <button className="danger" onClick={() => handleAppDelete(app)}>
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-          {applications.length === 0 && (
+      {applicationsLoading ? (
+        <Loader />
+      ) : (
+        <table className="data-table">
+          <thead>
             <tr>
-              <td colSpan={3}>No applications configured.</td>
+              <th>Name</th>
+              <th>Description</th>
+              <th></th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {applications.map((app) => (
+              <tr key={app.id}>
+                <td>{app.name}</td>
+                <td>{app.description || '-'}</td>
+                <td className="actions">
+                  <IconButton icon={<SettingOutlined />} label="Configurations" onClick={() => openConfigList(app)} />
+                  <IconButton icon={<EditOutlined />} label="Edit" onClick={() => handleAppEdit(app)} />
+                  <IconButton icon={<DeleteOutlined />} label="Delete" danger onClick={() => handleAppDelete(app)} />
+                </td>
+              </tr>
+            ))}
+            {applications.length === 0 && (
+              <tr>
+                <td colSpan={3}>No applications configured.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      )}
     </section>
   );
 }

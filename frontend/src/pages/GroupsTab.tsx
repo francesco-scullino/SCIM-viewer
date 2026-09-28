@@ -1,9 +1,12 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { PlusOutlined, ReloadOutlined, TeamOutlined, DeleteOutlined } from '@ant-design/icons';
 import { scimApi } from '../api/scim';
 import { ScimGroup, ScimGroupMemberRef, ScimUser } from '../api/types';
 import { useToast, describeError } from '../components/ToastContext';
 import { GroupDrawer } from '../components/GroupDrawer';
 import { GroupMembersDrawer } from '../components/GroupMembersDrawer';
+import { IconButton } from '../components/IconButton';
+import { Loader } from '../components/Loader';
 
 function formatMemberLabel(member: ScimGroupMemberRef, usersById: Map<string, ScimUser>): string {
   const user = usersById.get(member.value);
@@ -26,6 +29,7 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
   const [users, setUsers] = useState<ScimUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [groupDrawerOpen, setGroupDrawerOpen] = useState(false);
+  const [groupSubmitting, setGroupSubmitting] = useState(false);
   const [displayName, setDisplayName] = useState('');
   const [membersGroupId, setMembersGroupId] = useState<string | null>(null);
   const [addUserId, setAddUserId] = useState('');
@@ -55,6 +59,7 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
 
   const handleCreateGroup = async (e: FormEvent) => {
     e.preventDefault();
+    setGroupSubmitting(true);
     try {
       await scimApi.createGroup(applicationId, environmentId, { displayName });
       showSuccess('Group created');
@@ -63,6 +68,8 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
       loadGroups();
     } catch (err) {
       showError(describeError(err));
+    } finally {
+      setGroupSubmitting(false);
     }
   };
 
@@ -128,16 +135,15 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
   return (
     <div>
       <div className="tab-toolbar">
-        <button onClick={handleOpenGroupDrawer}>+ New group</button>
-        <button
-          className="secondary"
+        <IconButton icon={<PlusOutlined />} label="New group" onClick={handleOpenGroupDrawer} />
+        <IconButton
+          icon={<ReloadOutlined />}
+          label="Refresh"
           onClick={() => {
             loadGroups();
             loadUsers();
           }}
-        >
-          Refresh
-        </button>
+        />
       </div>
 
       <GroupDrawer
@@ -146,6 +152,7 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
         onClose={handleCloseGroupDrawer}
         onSubmit={handleCreateGroup}
         onChange={setDisplayName}
+        isLoading={groupSubmitting}
       />
 
       <GroupMembersDrawer
@@ -162,7 +169,7 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
       />
 
       {loading ? (
-        <p>Loading...</p>
+        <Loader />
       ) : (
         <table className="data-table">
           <thead>
@@ -178,10 +185,8 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
                 <td>{group.displayName}</td>
                 <td>{group.members?.length ?? 0}</td>
                 <td className="actions">
-                  <button onClick={() => openMembers(group)}>Manage members</button>
-                  <button className="danger" onClick={() => handleDeleteGroup(group)}>
-                    Delete
-                  </button>
+                  <IconButton icon={<TeamOutlined />} label="Manage members" onClick={() => openMembers(group)} />
+                  <IconButton icon={<DeleteOutlined />} label="Delete" danger onClick={() => handleDeleteGroup(group)} />
                 </td>
               </tr>
             ))}

@@ -1,5 +1,6 @@
 import { Drawer } from 'antd';
 import { FormEvent } from 'react';
+import { SubmitButton } from './SubmitButton';
 
 interface UserFormState {
   userName: string;
@@ -52,9 +53,7 @@ export function UserDrawer({ open, form, onClose, onSubmit, onChange, isLoading 
         </label>
 
         <div className="drawer-actions">
-          <button type="submit" disabled={isLoading}>
-            Create user
-          </button>
+          <SubmitButton loading={isLoading}>Create user</SubmitButton>
           <button type="button" className="secondary" onClick={onClose}>
             Cancel
           </button>

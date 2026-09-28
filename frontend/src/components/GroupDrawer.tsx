@@ -1,5 +1,6 @@
 import { Drawer } from 'antd';
 import { FormEvent } from 'react';
+import { SubmitButton } from './SubmitButton';
 
 interface GroupDrawerProps {
   open: boolean;
@@ -20,9 +21,7 @@ export function GroupDrawer({ open, displayName, onClose, onSubmit, onChange, is
         </label>
 
         <div className="drawer-actions">
-          <button type="submit" disabled={isLoading}>
-            Create group
-          </button>
+          <SubmitButton loading={isLoading}>Create group</SubmitButton>
           <button type="button" className="secondary" onClick={onClose}>
             Cancel
           </button>

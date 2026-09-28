@@ -1,8 +1,11 @@
 import { FormEvent, useEffect, useState } from 'react';
+import { PlusOutlined, ReloadOutlined, DeleteOutlined } from '@ant-design/icons';
 import { scimApi } from '../api/scim';
 import { ScimUser } from '../api/types';
 import { useToast, describeError } from '../components/ToastContext';
 import { UserDrawer } from '../components/UserDrawer';
+import { IconButton } from '../components/IconButton';
+import { Loader } from '../components/Loader';
 
 interface UserFormState {
   userName: string;
@@ -24,6 +27,7 @@ export function UsersTab({ applicationId, environmentId }: Props) {
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState<UserFormState>(emptyForm);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const { showError, showSuccess } = useToast();
 
   const load = () => {
@@ -39,6 +43,7 @@ export function UsersTab({ applicationId, environmentId }: Props) {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setSubmitting(true);
     try {
       await scimApi.createUser(applicationId, environmentId, {
         userName: form.userName,
@@ -53,6 +58,8 @@ export function UsersTab({ applicationId, environmentId }: Props) {
       load();
     } catch (err) {
       showError(describeError(err));
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -80,10 +87,8 @@ export function UsersTab({ applicationId, environmentId }: Props) {
   return (
     <div>
       <div className="tab-toolbar">
-        <button onClick={handleOpenDrawer}>+ New user</button>
-        <button className="secondary" onClick={load}>
-          Refresh
-        </button>
+        <IconButton icon={<PlusOutlined />} label="New user" onClick={handleOpenDrawer} />
+        <IconButton icon={<ReloadOutlined />} label="Refresh" onClick={load} />
       </div>
 
       <UserDrawer
@@ -92,10 +97,11 @@ export function UsersTab({ applicationId, environmentId }: Props) {
         onClose={handleCloseDrawer}
         onSubmit={handleSubmit}
         onChange={setForm}
+        isLoading={submitting}
       />
 
       {loading ? (
-        <p>Loading...</p>
+        <Loader />
       ) : (
         <table className="data-table">
           <thead>
@@ -117,9 +123,7 @@ export function UsersTab({ applicationId, environmentId }: Props) {
                 <td>{user.emails?.[0]?.value || '-'}</td>
                 <td>{user.active === false ? 'Inactive' : 'Active'}</td>
                 <td className="actions">
-                  <button className="danger" onClick={() => handleDelete(user)}>
-                    Delete
-                  </button>
+                  <IconButton icon={<DeleteOutlined />} label="Delete" danger onClick={() => handleDelete(user)} />
                 </td>
               </tr>
             ))}

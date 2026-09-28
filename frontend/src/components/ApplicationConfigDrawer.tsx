@@ -1,6 +1,7 @@
 import { Drawer } from 'antd';
 import { FormEvent } from 'react';
 import { Environment } from '../api/types';
+import { SubmitButton } from './SubmitButton';
 
 interface ConfigFormState {
   id: number | null;
@@ -82,9 +83,7 @@ export function ApplicationConfigDrawer({
         </label>
 
         <div className="drawer-actions">
-          <button type="submit" disabled={isLoading}>
-            {form.id != null ? 'Save changes' : 'Add'}
-          </button>
+          <SubmitButton loading={isLoading}>{form.id != null ? 'Save changes' : 'Add'}</SubmitButton>
           <button type="button" className="secondary" onClick={onClose}>
             Cancel
           </button>

@@ -1,5 +1,7 @@
 import { Drawer } from 'antd';
+import { UserAddOutlined, UserDeleteOutlined } from '@ant-design/icons';
 import { ScimGroup, ScimGroupMemberRef, ScimUser } from '../api/types';
+import { IconButton } from './IconButton';
 
 interface GroupMembersDrawerProps {
   open: boolean;
@@ -32,9 +34,12 @@ export function GroupMembersDrawer({
         {(group?.members ?? []).map((member) => (
           <li key={member.value}>
             {formatMemberLabel(member)}
-            <button className="danger small" onClick={() => onRemoveMember(member.value)}>
-              Remove
-            </button>
+            <IconButton
+              icon={<UserDeleteOutlined />}
+              label="Remove"
+              danger
+              onClick={() => onRemoveMember(member.value)}
+            />
           </li>
         ))}
         {(group?.members ?? []).length === 0 && <li>No members.</li>}
@@ -48,9 +53,7 @@ export function GroupMembersDrawer({
             </option>
           ))}
         </select>
-        <button onClick={onAddMember} disabled={!addUserId}>
-          Add to group
-        </button>
+        <IconButton icon={<UserAddOutlined />} label="Add to group" onClick={onAddMember} disabled={!addUserId} />
       </div>
     </Drawer>
   );

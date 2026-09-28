@@ -7,6 +7,10 @@
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
+html {
+  font-size: 14px;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -102,6 +106,17 @@ section > h2 {
   font-size: 0.9rem;
 }
 
+.loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 3rem 0;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
 .checkbox-label {
   flex-direction: row !important;
   align-items: center;
@@ -129,19 +144,28 @@ button.danger {
   border-color: var(--danger);
 }
 
-button.small {
-  padding: 0.2rem 0.5rem;
-  font-size: 0.8rem;
-}
-
 button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
+.icon-btn {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
 .data-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   background: white;
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -162,9 +186,15 @@ button:disabled {
   background: var(--bg-muted);
 }
 
+.data-table td.actions {
+  text-align: right;
+}
+
 .actions {
   display: flex;
-  gap: 0.4rem;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  align-items: center;
   flex-wrap: wrap;
 }
 
@@ -173,7 +203,7 @@ button:disabled {
 }
 
 .config-table {
-  width: auto;
+  width: 100%;
 }
 
 .config-table th,
@@ -240,6 +270,7 @@ button:disabled {
 
 .section-toolbar {
   display: flex;
+  align-items: center;
   gap: 0.5rem;
   margin-bottom: 1rem;
 }
@@ -264,6 +295,7 @@ button:disabled {
 
 .tab-toolbar {
   display: flex;
+  align-items: center;
   gap: 0.5rem;
   margin-bottom: 1rem;
 }
@@ -289,6 +321,7 @@ button:disabled {
 
 .add-member-row {
   display: flex;
+  align-items: center;
   gap: 0.5rem;
 }
 
@@ -299,7 +332,7 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  z-index: 1000;
+  z-index: 9999;
 }
 
 .toast {
