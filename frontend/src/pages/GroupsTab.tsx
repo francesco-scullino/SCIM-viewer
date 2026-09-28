@@ -1,7 +1,18 @@
-import { Fragment, FormEvent, useEffect, useState } from 'react';
+import { Fragment, FormEvent, useEffect, useMemo, useState } from 'react';
 import { scimApi } from '../api/scim';
-import { ScimGroup, ScimUser } from '../api/types';
+import { ScimGroup, ScimGroupMemberRef, ScimUser } from '../api/types';
 import { useToast, describeError } from '../components/ToastContext';
+
+function formatMemberLabel(member: ScimGroupMemberRef, usersById: Map<string, ScimUser>): string {
+  const user = usersById.get(member.value);
+  if (user) return formatUserLabel(user);
+  return member.display || member.value;
+}
+
+function formatUserLabel(user: ScimUser): string {
+  const fullName = [user.name?.givenName, user.name?.familyName].filter(Boolean).join(' ');
+  return fullName ? `${fullName} (${user.userName})` : user.userName;
+}
 
 interface Props {
   applicationId: number;
@@ -64,6 +75,8 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
       showError(describeError(err));
     }
   };
+
+  const usersById = useMemo(() => new Map(users.map((u) => [u.id, u])), [users]);
 
   const toggleMembers = (group: ScimGroup) => {
     setExpandedGroupId((current) => (current === group.id ? null : group.id));
@@ -154,7 +167,7 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
                         <ul className="member-list">
                           {(group.members ?? []).map((member) => (
                             <li key={member.value}>
-                              {member.display || member.value}
+                              {formatMemberLabel(member, usersById)}
                               <button className="danger small" onClick={() => handleRemoveMember(group, member.value)}>
                                 Rimuovi
                               </button>
@@ -167,7 +180,7 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
                             <option value="">-- seleziona utente --</option>
                             {users.map((user) => (
                               <option key={user.id} value={user.id}>
-                                {user.userName}
+                                {formatUserLabel(user)}
                               </option>
                             ))}
                           </select>
