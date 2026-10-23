@@ -1,63 +1,85 @@
 import { Drawer } from 'antd';
-import { UserAddOutlined, UserDeleteOutlined } from '@ant-design/icons';
-import { ScimGroup, ScimGroupMemberRef, ScimUser } from '../api/types';
+import { FormEvent, useId } from 'react';
+import { ScimGroup, ScimUser } from '../api/types';
 import { EmptyState } from './EmptyState';
-import { IconButton } from './IconButton';
+import { SubmitButton } from './SubmitButton';
 
 interface GroupMembersDrawerProps {
   open: boolean;
   group: ScimGroup | null;
   users: ScimUser[];
-  addUserId: string;
+  selectedMemberIds: Set<string>;
+  currentMemberIds: Set<string>;
+  onToggleMember: (userId: string) => void;
   onClose: () => void;
-  onAddUserIdChange: (userId: string) => void;
-  onAddMember: () => void;
-  onRemoveMember: (userId: string) => void;
-  formatMemberLabel: (member: ScimGroupMemberRef) => string;
-  formatUserLabel: (user: ScimUser) => string;
+  onSubmit: () => void;
+  isLoading?: boolean;
+  isSubmitting?: boolean;
 }
 
 export function GroupMembersDrawer({
   open,
   group,
   users,
-  addUserId,
+  selectedMemberIds,
+  currentMemberIds,
+  onToggleMember,
   onClose,
-  onAddUserIdChange,
-  onAddMember,
-  onRemoveMember,
-  formatMemberLabel,
-  formatUserLabel,
+  onSubmit,
+  isLoading,
+  isSubmitting,
 }: GroupMembersDrawerProps) {
+  const hasChanges = users.some((u) => selectedMemberIds.has(u.id) !== currentMemberIds.has(u.id));
+  const formId = useId();
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    onSubmit();
+  };
+
   return (
-    <Drawer title={group ? `Members of ${group.displayName}` : 'Members'} onClose={onClose} open={open} size={480}>
-      <p className="hint">Add or remove users from this group in the selected context.</p>
-      <ul className="member-list">
-        {(group?.members ?? []).map((member) => (
-          <li key={member.value}>
-            <span className="member-label">{formatMemberLabel(member)}</span>
-            <IconButton
-              icon={<UserDeleteOutlined />}
-              label={'Remove ' + formatMemberLabel(member)}
-              danger
-              onClick={() => onRemoveMember(member.value)}
-            />
-          </li>
-        ))}
-        {(group?.members ?? []).length === 0 && <li><EmptyState title="No members yet" description="Select a user below to add them to this group." /></li>}
-      </ul>
-      <label className="member-add-label" htmlFor="member-user">Add a member</label>
-      <div className="add-member-row">
-        <select id="member-user" value={addUserId} onChange={(e) => onAddUserIdChange(e.target.value)}>
-          <option value="">-- select user --</option>
-          {users.map((user) => (
-            <option key={user.id} value={user.id}>
-              {formatUserLabel(user)}
-            </option>
-          ))}
-        </select>
-        <IconButton icon={<UserAddOutlined />} label="Add to group" showLabel onClick={onAddMember} disabled={!addUserId} />
-      </div>
+    <Drawer
+      title={group ? `Members of ${group.displayName}` : 'Members'}
+      onClose={onClose}
+      open={open}
+      size={480}
+      footer={
+        <div className="drawer-footer-actions">
+          <SubmitButton form={formId} loading={isSubmitting} disabled={!hasChanges}>
+            Save membership
+          </SubmitButton>
+          <button type="button" className="secondary" onClick={onClose}>
+            Cancel
+          </button>
+        </div>
+      }
+    >
+      <p className="hint">Check or uncheck users to add or remove them from this group.</p>
+      <form id={formId} className="drawer-form" onSubmit={handleSubmit}>
+        {isLoading ? (
+          <p className="hint">Loading users…</p>
+        ) : users.length === 0 ? (
+          <EmptyState title="No users in this context" description="Create a user first, then come back to add them to the group." />
+        ) : (
+          <ul className="group-checklist">
+            {users.map((user) => (
+              <li key={user.id}>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={selectedMemberIds.has(user.id)}
+                    onChange={() => onToggleMember(user.id)}
+                  />
+                  <div className="checkbox-label-info">
+                    <span className="checkbox-label-name">{[user.name?.givenName, user.name?.familyName].filter(Boolean).join(' ') || user.userName}</span>
+                    {user.userName && <span className="checkbox-label-username">{user.userName}</span>}
+                  </div>
+                </label>
+              </li>
+            ))}
+          </ul>
+        )}
+      </form>
     </Drawer>
   );
 }
