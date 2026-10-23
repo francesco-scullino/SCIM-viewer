@@ -1,0 +1,27 @@
+
+  [32m[1mVITE[22m v5.4.21[39m  [2mready in [0m[1m1500[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://127.0.0.1:[1m5173[22m/[39m
+[2m9:50:31 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/environments[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1430:18)
+    at afterConnectMultiple (node:net:2099:7)
+[2m10:13:02 AM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/index.css[22m
+[2m10:13:02 AM[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/main.tsx[22m
+[2m10:13:02 AM[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2mindex.html[22m
+[2m10:26:26 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/environments[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1430:18)
+    at afterConnectMultiple (node:net:2099:7)
+[2m10:26:26 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/applications[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1430:18)
+    at afterConnectMultiple (node:net:2099:7)
+[2m10:26:26 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/environments[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1430:18)
+    at afterConnectMultiple (node:net:2099:7)
+[2m10:26:26 AM[22m [31m[1m[vite][22m[39m [31mhttp proxy error: /api/applications[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1430:18)
+    at afterConnectMultiple (node:net:2099:7)

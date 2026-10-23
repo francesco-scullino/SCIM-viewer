@@ -20,6 +20,7 @@ interface ApplicationDrawerProps {
 export function ApplicationDrawer({ open, form, onClose, onSubmit, onChange, isLoading }: ApplicationDrawerProps) {
   return (
     <Drawer title={form.id != null ? 'Edit application' : 'New application'} onClose={onClose} open={open} size={480}>
+      <p className="hint">Register an application, then add its environment configurations.</p>
       <form className="drawer-form" onSubmit={onSubmit}>
         <label>
           Name

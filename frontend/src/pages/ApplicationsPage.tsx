@@ -1,5 +1,8 @@
-import { FormEvent, useEffect, useState } from 'react';
-import { PlusOutlined, EditOutlined, DeleteOutlined, SettingOutlined } from '@ant-design/icons';
+import { FormEvent, useEffect, useRef, useState } from 'react';
+import { PlusOutlined, EditOutlined, DeleteOutlined, SettingOutlined, AppstoreOutlined, SearchOutlined } from '@ant-design/icons';
+import { Input } from 'antd';
+import { PageHeader } from '../components/PageHeader';
+import { EmptyState, DataError } from '../components/EmptyState';
 import { applicationsApi } from '../api/applications';
 import { environmentsApi } from '../api/environments';
 import { Application, AppEnvironmentConfig, Environment } from '../api/types';
@@ -38,7 +41,9 @@ const emptyConfigForm: ConfigFormState = {
 
 export function ApplicationsPage() {
   const [applications, setApplications] = useState<Application[]>([]);
-  const [applicationsLoading, setApplicationsLoading] = useState(false);
+  const [applicationsLoading, setApplicationsLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [search, setSearch] = useState('');
   const [environments, setEnvironments] = useState<Environment[]>([]);
   const [appForm, setAppForm] = useState<AppFormState>(emptyAppForm);
   const [appDrawerOpen, setAppDrawerOpen] = useState(false);
@@ -47,6 +52,9 @@ export function ApplicationsPage() {
   const [configListDrawerOpen, setConfigListDrawerOpen] = useState(false);
   const [configs, setConfigs] = useState<AppEnvironmentConfig[]>([]);
   const [configsLoading, setConfigsLoading] = useState(false);
+  const [configsError, setConfigsError] = useState('');
+  const configsRequestId = useRef(0);
+  const activeConfigAppId = useRef<number | null>(null);
   const [configForm, setConfigForm] = useState<ConfigFormState>(emptyConfigForm);
   const [configDrawerOpen, setConfigDrawerOpen] = useState(false);
   const [configSubmitting, setConfigSubmitting] = useState(false);
@@ -54,26 +62,35 @@ export function ApplicationsPage() {
 
   const loadApplications = () => {
     setApplicationsLoading(true);
+    setLoadError('');
     applicationsApi
       .list()
       .then(setApplications)
-      .catch((err) => showError(describeError(err)))
+      .catch((err) => { const message = describeError(err); setLoadError(message); showError(message); })
       .finally(() => setApplicationsLoading(false));
   };
 
   useEffect(() => {
     loadApplications();
     environmentsApi.list().then(setEnvironments).catch((err) => showError(describeError(err)));
+    return () => { configsRequestId.current += 1; activeConfigAppId.current = null; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadConfigs = (applicationId: number) => {
+    if (activeConfigAppId.current !== applicationId) return;
+    const request = ++configsRequestId.current;
     setConfigsLoading(true);
-    applicationsApi
-      .listConfigs(applicationId)
-      .then(setConfigs)
-      .catch((err) => showError(describeError(err)))
-      .finally(() => setConfigsLoading(false));
+    setConfigsError('');
+    applicationsApi.listConfigs(applicationId)
+      .then((result) => { if (request === configsRequestId.current && activeConfigAppId.current === applicationId) setConfigs(result); })
+      .catch((err) => {
+        if (request !== configsRequestId.current || activeConfigAppId.current !== applicationId) return;
+        const message = describeError(err);
+        setConfigsError(message);
+        showError(message);
+      })
+      .finally(() => { if (request === configsRequestId.current && activeConfigAppId.current === applicationId) setConfigsLoading(false); });
   };
 
   const handleAppSubmit = async (e: FormEvent) => {
@@ -109,8 +126,7 @@ export function ApplicationsPage() {
       await applicationsApi.remove(app.id);
       showSuccess('Application deleted');
       if (selectedAppId === app.id) {
-        setSelectedAppId(null);
-        setConfigListDrawerOpen(false);
+        closeConfigList();
       }
       loadApplications();
     } catch (err) {
@@ -129,14 +145,22 @@ export function ApplicationsPage() {
   };
 
   const openConfigList = (app: Application) => {
+    activeConfigAppId.current = app.id;
+    setConfigs([]);
     setSelectedAppId(app.id);
     setConfigListDrawerOpen(true);
     loadConfigs(app.id);
   };
 
   const closeConfigList = () => {
+    configsRequestId.current += 1;
+    activeConfigAppId.current = null;
     setConfigListDrawerOpen(false);
+    setConfigDrawerOpen(false);
     setSelectedAppId(null);
+    setConfigs([]);
+    setConfigsLoading(false);
+    setConfigsError('');
   };
 
   const handleConfigSubmit = async (e: FormEvent) => {
@@ -204,17 +228,12 @@ export function ApplicationsPage() {
 
   const selectedApp = applications.find((a) => a.id === selectedAppId) ?? null;
 
-  return (
-    <section>
-      <h2>Applications</h2>
-      <p className="hint">
-        For each application you can define, per environment, the client id, client secret and SCIM
-        base URL used to authenticate and call its SCIM API.
-      </p>
+  const term = search.trim().toLocaleLowerCase();
+  const filteredApplications = applications.filter((app) => (app.name + ' ' + (app.description ?? '')).toLocaleLowerCase().includes(term));
 
-      <div className="section-toolbar">
-        <IconButton icon={<PlusOutlined />} label="New application" onClick={handleOpenAppDrawer} />
-      </div>
+  return (
+    <section aria-label="Applications registry">
+      <PageHeader title="Applications" description="Register your applications and configure their SCIM connection for each environment." action={<IconButton icon={<PlusOutlined />} label="New application" showLabel onClick={handleOpenAppDrawer} />} />
 
       <ApplicationDrawer
         open={appDrawerOpen}
@@ -230,6 +249,8 @@ export function ApplicationsPage() {
         application={selectedApp}
         configs={configs}
         loading={configsLoading}
+        error={configsError}
+        onRetry={() => { if (selectedAppId != null) loadConfigs(selectedAppId); }}
         onClose={closeConfigList}
         onAddNew={handleOpenConfigDrawer}
         onEdit={handleConfigEdit}
@@ -246,37 +267,21 @@ export function ApplicationsPage() {
         isLoading={configSubmitting}
       />
 
-      {applicationsLoading ? (
-        <Loader />
-      ) : (
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Description</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {applications.map((app) => (
-              <tr key={app.id}>
-                <td>{app.name}</td>
-                <td>{app.description || '-'}</td>
-                <td className="actions">
-                  <IconButton icon={<SettingOutlined />} label="Configurations" onClick={() => openConfigList(app)} />
-                  <IconButton icon={<EditOutlined />} label="Edit" onClick={() => handleAppEdit(app)} />
-                  <IconButton icon={<DeleteOutlined />} label="Delete" danger onClick={() => handleAppDelete(app)} />
-                </td>
-              </tr>
-            ))}
-            {applications.length === 0 && (
-              <tr>
-                <td colSpan={3}>No applications configured.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      )}
+      <div className="data-panel" aria-busy={applicationsLoading}>
+        <div className="table-toolbar"><div className="toolbar-search"><Input allowClear className="search-input" prefix={<SearchOutlined />} placeholder="Find an application" aria-label="Search applications" value={search} onChange={(e) => setSearch(e.target.value)} /><span className="result-count" aria-live="polite">{applicationsLoading ? 'Loading…' : loadError ? 'Unavailable' : filteredApplications.length + ' of ' + applications.length}</span></div></div>
+        {applicationsLoading ? <Loader label="Loading applications…" /> : loadError ? <DataError message={loadError} onRetry={loadApplications} /> : filteredApplications.length === 0 ? (
+          <EmptyState icon={<AppstoreOutlined />} title={search ? 'No matching applications' : 'Add your first application'} description={search ? 'Try a different name or clear the search.' : 'Register an application, then configure its credentials and SCIM URL for each environment.'} action={search ? <button type="button" className="secondary" onClick={() => setSearch('')}>Clear search</button> : <IconButton icon={<PlusOutlined />} label="New application" showLabel onClick={handleOpenAppDrawer} />} />
+        ) : <div className="table-scroll" role="region" aria-label="Applications table" tabIndex={0}><table className="data-table applications-table">
+          <caption className="visually-hidden">Registered applications</caption>
+          <thead><tr><th scope="col">Application</th><th scope="col">Description</th><th scope="col" className="actions-heading">Actions</th></tr></thead>
+          <tbody>{filteredApplications.map((app) => <tr key={app.id}>
+            <td><div className="identity-cell"><span className="identity-avatar" aria-hidden="true"><AppstoreOutlined /></span><span className="identity-name">{app.name}</span></div></td>
+            <td>{app.description || '—'}</td>
+            <td className="actions"><IconButton icon={<SettingOutlined />} label="Configurations" showLabel className="secondary" onClick={() => openConfigList(app)} /><IconButton icon={<EditOutlined />} label={'Edit application ' + app.name} onClick={() => handleAppEdit(app)} /><IconButton icon={<DeleteOutlined />} label={'Delete application ' + app.name} danger onClick={() => handleAppDelete(app)} /></td>
+          </tr>)}</tbody>
+        </table></div>}
+        {!applicationsLoading && !loadError && filteredApplications.length > 0 && <div className="table-footer"><span>{filteredApplications.length} {filteredApplications.length === 1 ? 'application' : 'applications'} shown</span><span>Credentials are configured per environment</span></div>}
+      </div>
     </section>
   );
 }

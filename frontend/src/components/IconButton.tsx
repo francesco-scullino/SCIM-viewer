@@ -5,19 +5,10 @@ interface IconButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 
   icon: ReactNode;
   label: string;
   danger?: boolean;
+  showLabel?: boolean;
 }
-
-/**
- * Small round button that shows only an icon, with its label available as a tooltip
- * (hover/focus) and as an accessible name for screen readers.
- */
-export function IconButton({ icon, label, danger, className, ...rest }: IconButtonProps) {
-  const classes = ['icon-btn', danger ? 'danger' : '', className].filter(Boolean).join(' ');
-  return (
-    <Tooltip title={label}>
-      <button type="button" className={classes} aria-label={label} {...rest}>
-        {icon}
-      </button>
-    </Tooltip>
-  );
+export function IconButton({ icon, label, danger, showLabel, className, ...rest }: IconButtonProps) {
+  const classes = [showLabel ? 'label-button' : 'icon-btn', danger ? 'danger' : '', className].filter(Boolean).join(' ');
+  const button = <button type="button" className={classes} aria-label={label} {...rest}><span aria-hidden="true">{icon}</span>{showLabel && <span>{label}</span>}</button>;
+  return showLabel ? button : <Tooltip title={label}>{button}</Tooltip>;
 }

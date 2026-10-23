@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router-dom';
+import { NotFoundPage } from './pages/NotFoundPage';
 import { Layout } from './components/Layout';
 import { UsersGroupsPage } from './pages/UsersGroupsPage';
 import { ApplicationsPage } from './pages/ApplicationsPage';
@@ -15,6 +16,7 @@ export function App() {
             <Route index element={<UsersGroupsPage />} />
             <Route path="applications" element={<ApplicationsPage />} />
             <Route path="environments" element={<EnvironmentsPage />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>
       </SelectionProvider>

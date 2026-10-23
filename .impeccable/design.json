@@ -1,0 +1,439 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-08T07:52:42.129Z",
+  "title": "Design System: SCIM Viewer",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Blue",
+        "tonalRamp": [
+          "oklch(0.150 0.0659 255.67)",
+          "oklch(0.264 0.1162 255.67)",
+          "oklch(0.379 0.1319 255.67)",
+          "oklch(0.493 0.1319 255.67)",
+          "oklch(0.607 0.1319 255.67)",
+          "oklch(0.721 0.1319 255.67)",
+          "oklch(0.836 0.1083 255.67)",
+          "oklch(0.950 0.0330 255.67)"
+        ],
+        "rampPurpose": "Generated documentation preview from source hue/chroma; not additional shipping tokens."
+      },
+      "primary-hover": {
+        "role": "primary",
+        "displayName": "Deep Blue",
+        "tonalRamp": [
+          "oklch(0.150 0.0562 256.13)",
+          "oklch(0.264 0.0990 256.13)",
+          "oklch(0.379 0.1123 256.13)",
+          "oklch(0.493 0.1123 256.13)",
+          "oklch(0.607 0.1123 256.13)",
+          "oklch(0.721 0.1123 256.13)",
+          "oklch(0.836 0.0923 256.13)",
+          "oklch(0.950 0.0281 256.13)"
+        ],
+        "rampPurpose": "Generated documentation preview from source hue/chroma; not additional shipping tokens."
+      },
+      "danger": {
+        "role": "semantic",
+        "displayName": "Danger Red",
+        "tonalRamp": [
+          "oklch(0.150 0.0807 24.42)",
+          "oklch(0.264 0.1421 24.42)",
+          "oklch(0.379 0.1613 24.42)",
+          "oklch(0.493 0.1613 24.42)",
+          "oklch(0.607 0.1613 24.42)",
+          "oklch(0.721 0.1613 24.42)",
+          "oklch(0.836 0.1325 24.42)",
+          "oklch(0.950 0.0403 24.42)"
+        ],
+        "rampPurpose": "Generated documentation preview from source hue/chroma; not additional shipping tokens."
+      },
+      "danger-soft": {
+        "role": "semantic",
+        "displayName": "Pale Error",
+        "tonalRamp": [
+          "oklch(0.150 0.0071 22.76)",
+          "oklch(0.264 0.0125 22.76)",
+          "oklch(0.379 0.0141 22.76)",
+          "oklch(0.493 0.0141 22.76)",
+          "oklch(0.607 0.0141 22.76)",
+          "oklch(0.721 0.0141 22.76)",
+          "oklch(0.836 0.0116 22.76)",
+          "oklch(0.950 0.0035 22.76)"
+        ],
+        "rampPurpose": "Generated documentation preview from source hue/chroma; not additional shipping tokens."
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Blue Ink",
+        "tonalRamp": [
+          "oklch(0.150 0.0263 255.37)",
+          "oklch(0.264 0.0464 255.37)",
+          "oklch(0.379 0.0527 255.37)",
+          "oklch(0.493 0.0527 255.37)",
+          "oklch(0.607 0.0527 255.37)",
+          "oklch(0.721 0.0527 255.37)",
+          "oklch(0.836 0.0432 255.37)",
+          "oklch(0.950 0.0132 255.37)"
+        ],
+        "rampPurpose": "Generated documentation preview from source hue/chroma; not additional shipping tokens."
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted Slate Ink",
+        "tonalRamp": [
+          "oklch(0.150 0.0222 254.46)",
+          "oklch(0.264 0.0392 254.46)",
+          "oklch(0.379 0.0445 254.46)",
+          "oklch(0.493 0.0445 254.46)",
+          "oklch(0.607 0.0445 254.46)",
+          "oklch(0.721 0.0445 254.46)",
+          "oklch(0.836 0.0365 254.46)",
+          "oklch(0.950 0.0111 254.46)"
+        ],
+        "rampPurpose": "Generated documentation preview from source hue/chroma; not additional shipping tokens."
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Soft Divider",
+        "tonalRamp": [
+          "oklch(0.150 0.0092 258.35)",
+          "oklch(0.264 0.0163 258.35)",
+          "oklch(0.379 0.0185 258.35)",
+          "oklch(0.493 0.0185 258.35)",
+          "oklch(0.607 0.0185 258.35)",
+          "oklch(0.721 0.0185 258.35)",
+          "oklch(0.836 0.0152 258.35)",
+          "oklch(0.950 0.0046 258.35)"
+        ],
+        "rampPurpose": "Generated documentation preview from source hue/chroma; not additional shipping tokens."
+      },
+      "border-strong": {
+        "role": "neutral",
+        "displayName": "Field Divider",
+        "tonalRamp": [
+          "oklch(0.150 0.0144 256.50)",
+          "oklch(0.264 0.0254 256.50)",
+          "oklch(0.379 0.0288 256.50)",
+          "oklch(0.493 0.0288 256.50)",
+          "oklch(0.607 0.0288 256.50)",
+          "oklch(0.721 0.0288 256.50)",
+          "oklch(0.836 0.0237 256.50)",
+          "oklch(0.950 0.0072 256.50)"
+        ],
+        "rampPurpose": "Generated documentation preview from source hue/chroma; not additional shipping tokens."
+      },
+      "bg": {
+        "role": "neutral",
+        "displayName": "Mineral Background",
+        "tonalRamp": [
+          "oklch(0.150 0.0031 255.47)",
+          "oklch(0.264 0.0055 255.47)",
+          "oklch(0.379 0.0062 255.47)",
+          "oklch(0.493 0.0062 255.47)",
+          "oklch(0.607 0.0062 255.47)",
+          "oklch(0.721 0.0062 255.47)",
+          "oklch(0.836 0.0051 255.47)",
+          "oklch(0.950 0.0016 255.47)"
+        ],
+        "rampPurpose": "Generated documentation preview from source hue/chroma; not additional shipping tokens."
+      },
+      "bg-muted": {
+        "role": "neutral",
+        "displayName": "Pale Mineral",
+        "tonalRamp": [
+          "oklch(0.150 0.0023 258.32)",
+          "oklch(0.264 0.0040 258.32)",
+          "oklch(0.379 0.0045 258.32)",
+          "oklch(0.493 0.0045 258.32)",
+          "oklch(0.607 0.0045 258.32)",
+          "oklch(0.721 0.0045 258.32)",
+          "oklch(0.836 0.0037 258.32)",
+          "oklch(0.950 0.0011 258.32)"
+        ],
+        "rampPurpose": "Generated documentation preview from source hue/chroma; not additional shipping tokens."
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Paper Surface",
+        "tonalRamp": [
+          "oklch(0.150 0.0000 89.88)",
+          "oklch(0.264 0.0000 89.88)",
+          "oklch(0.379 0.0000 89.88)",
+          "oklch(0.493 0.0000 89.88)",
+          "oklch(0.607 0.0000 89.88)",
+          "oklch(0.721 0.0000 89.88)",
+          "oklch(0.836 0.0000 89.88)",
+          "oklch(0.950 0.0000 89.88)"
+        ],
+        "rampPurpose": "Generated documentation preview from source hue/chroma; not additional shipping tokens."
+      },
+      "selected": {
+        "role": "primary",
+        "displayName": "Selected Mineral",
+        "tonalRamp": [
+          "oklch(0.150 0.0086 256.28)",
+          "oklch(0.264 0.0151 256.28)",
+          "oklch(0.379 0.0171 256.28)",
+          "oklch(0.493 0.0171 256.28)",
+          "oklch(0.607 0.0171 256.28)",
+          "oklch(0.721 0.0171 256.28)",
+          "oklch(0.836 0.0141 256.28)",
+          "oklch(0.950 0.0043 256.28)"
+        ],
+        "rampPurpose": "Generated documentation preview from source hue/chroma; not additional shipping tokens."
+      },
+      "rail": {
+        "role": "primary",
+        "displayName": "Rail Blue",
+        "tonalRamp": [
+          "oklch(0.150 0.0395 257.58)",
+          "oklch(0.264 0.0696 257.58)",
+          "oklch(0.379 0.0790 257.58)",
+          "oklch(0.493 0.0790 257.58)",
+          "oklch(0.607 0.0790 257.58)",
+          "oklch(0.721 0.0790 257.58)",
+          "oklch(0.836 0.0649 257.58)",
+          "oklch(0.950 0.0198 257.58)"
+        ],
+        "rampPurpose": "Generated documentation preview from source hue/chroma; not additional shipping tokens."
+      },
+      "rail-text": {
+        "role": "neutral",
+        "displayName": "Rail Paper",
+        "tonalRamp": [
+          "oklch(0.150 0.0054 256.69)",
+          "oklch(0.264 0.0095 256.69)",
+          "oklch(0.379 0.0108 256.69)",
+          "oklch(0.493 0.0108 256.69)",
+          "oklch(0.607 0.0108 256.69)",
+          "oklch(0.721 0.0108 256.69)",
+          "oklch(0.836 0.0089 256.69)",
+          "oklch(0.950 0.0027 256.69)"
+        ],
+        "rampPurpose": "Generated documentation preview from source hue/chroma; not additional shipping tokens."
+      },
+      "rail-muted": {
+        "role": "neutral",
+        "displayName": "Rail Slate",
+        "tonalRamp": [
+          "oklch(0.150 0.0201 256.60)",
+          "oklch(0.264 0.0355 256.60)",
+          "oklch(0.379 0.0403 256.60)",
+          "oklch(0.493 0.0403 256.60)",
+          "oklch(0.607 0.0403 256.60)",
+          "oklch(0.721 0.0403 256.60)",
+          "oklch(0.836 0.0331 256.60)",
+          "oklch(0.950 0.0101 256.60)"
+        ],
+        "rampPurpose": "Generated documentation preview from source hue/chroma; not additional shipping tokens."
+      }
+    },
+    "typographyMeta": {
+      "title": {
+        "displayName": "Page title",
+        "purpose": "Compact route heading; 24px on mobile."
+      },
+      "body": {
+        "displayName": "System body",
+        "purpose": "Operator interface text with tabular numerals."
+      },
+      "table": {
+        "displayName": "Table text",
+        "purpose": "Dense data rows and short supporting copy."
+      },
+      "label": {
+        "displayName": "Compact label",
+        "purpose": "Table headings and selection labels."
+      },
+      "drawer-title": {
+        "displayName": "Drawer title",
+        "purpose": "Standard Ant drawer heading."
+      },
+      "endpoint": {
+        "displayName": "Technical endpoint",
+        "purpose": "Monospace URL and endpoint values only."
+      }
+    },
+    "shadows": [
+      {
+        "name": "overlay",
+        "value": "-12px 0 40px rgb(24 52 92 / 12%)",
+        "purpose": "Drawer content layer."
+      },
+      {
+        "name": "toast",
+        "value": "0 8px 28px rgb(24 52 92 / 16%)",
+        "purpose": "Transient notification."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease",
+        "value": "cubic-bezier(.16, 1, .3, 1)",
+        "purpose": "Native control feedback."
+      },
+      {
+        "name": "control-transition",
+        "value": "160ms",
+        "purpose": "Color, border and shadow transitions."
+      },
+      {
+        "name": "loading-pulse",
+        "value": "1.4s ease-in-out infinite alternate",
+        "purpose": "Loading row opacity pulse; disabled with reduced motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "compact-workspace",
+        "value": "1100px"
+      },
+      {
+        "name": "horizontal-navigation",
+        "value": "760px"
+      },
+      {
+        "name": "stacked-context",
+        "value": "420px"
+      },
+      {
+        "name": "wide-workspace",
+        "value": "1700px"
+      }
+    ],
+    "verification": {
+      "basis": "Implemented CSS, theme and TSX inspection. No browser screenshots or rendered visual review available.",
+      "sourceFiles": [
+        "frontend/src/index.css",
+        "frontend/src/main.tsx",
+        "frontend/src/components/Layout.tsx",
+        "frontend/src/components/EnvironmentAppSelector.tsx",
+        "frontend/src/pages/UsersGroupsPage.tsx",
+        "frontend/src/pages/UsersTab.tsx",
+        "frontend/src/pages/GroupsTab.tsx",
+        "frontend/src/pages/ApplicationsPage.tsx",
+        "frontend/src/pages/EnvironmentsPage.tsx"
+      ],
+      "checks": "Final TypeScript checks, Vite production build and SSR smoke passed as reported by the parent agent. Frontend development HTTP response was 200. Backend unavailable; live API workflows untested.",
+      "assets": "frontend/public/favicon.svg is authored SVG. No shipping raster assets."
+    }
+  },
+  "components": [
+    {
+      "name": "Primary button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Visible, labelled creation or submission action.",
+      "html": "<button class=\"ds-button-primary\">New user</button>",
+      "css": ".ds-button-primary{min-height:36px;padding:7px 13px;display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid transparent;border-radius:6px;font:600 13px/1.4 'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;cursor:pointer;transition:background-color 160ms cubic-bezier(.16,1,.3,1),border-color 160ms cubic-bezier(.16,1,.3,1),color 160ms cubic-bezier(.16,1,.3,1);background:var(--primary,#245fa8);color:var(--surface,#ffffff);}.ds-button-primary:hover{background:var(--primary-hover,#1c4b87);}.ds-button-primary:focus-visible { outline:3px solid #487ebd; outline-offset:3px; }.ds-button-primary:active:not(:disabled){transform:translateY(1px)}.ds-button-primary:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-button-primary{transition:none}.ds-button-primary:active:not(:disabled){transform:none}}"
+    },
+    {
+      "name": "Secondary button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Quiet cancellation or membership management action.",
+      "html": "<button class=\"ds-button-secondary\">Manage members</button>",
+      "css": ".ds-button-secondary{min-height:36px;padding:7px 13px;display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid transparent;border-radius:6px;font:600 13px/1.4 'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;cursor:pointer;transition:background-color 160ms cubic-bezier(.16,1,.3,1),border-color 160ms cubic-bezier(.16,1,.3,1),color 160ms cubic-bezier(.16,1,.3,1);background:var(--surface,#ffffff);color:var(--ink,#263a54);border-color:var(--border-strong,#c2cfe1);}.ds-button-secondary:hover{background:var(--bg-muted,#f7f9fc);border-color:#8399b5;}.ds-button-secondary:focus-visible { outline:3px solid #487ebd; outline-offset:3px; }.ds-button-secondary:active:not(:disabled){transform:translateY(1px)}.ds-button-secondary:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-button-secondary{transition:none}.ds-button-secondary:active:not(:disabled){transform:none}}"
+    },
+    {
+      "name": "Destructive icon button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Accessible icon-only destructive row control; production uses an Ant tooltip.",
+      "html": "<button class=\"ds-button-danger\" aria-label=\"Delete user\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" aria-hidden=\"true\"><path d=\"M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14M10 10v8m4-8v8\"/></svg></button>",
+      "css": ".ds-button-danger{min-height:36px;padding:7px 13px;display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid transparent;border-radius:6px;font:600 13px/1.4 'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;cursor:pointer;transition:background-color 160ms cubic-bezier(.16,1,.3,1),border-color 160ms cubic-bezier(.16,1,.3,1),color 160ms cubic-bezier(.16,1,.3,1);min-height:32px;width:32px;padding:0;border-radius:5px;background:transparent;color:var(--danger,#b83b3b);}.ds-button-danger:hover{background:var(--danger-soft,#fdf0ef);}.ds-button-danger:focus-visible { outline:3px solid #487ebd; outline-offset:3px; }.ds-button-danger:active:not(:disabled){transform:translateY(1px)}.ds-button-danger:disabled{opacity:.5;cursor:not-allowed}@media(prefers-reduced-motion:reduce){.ds-button-danger{transition:none}.ds-button-danger:active:not(:disabled){transform:none}}"
+    },
+    {
+      "name": "Native field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Labelled drawer field; mobile text becomes 16px.",
+      "html": "<label class=\"ds-field-label\">Username<input class=\"ds-field\" placeholder=\"Username\" /></label>",
+      "css": ".ds-field-label{display:flex;flex-direction:column;gap:7px;color:var(--ink,#263a54);font:600 12px 'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif}.ds-field{min-height:38px;padding:8px 11px;border:1px solid var(--border-strong,#c2cfe1);border-radius:6px;color:var(--ink,#263a54);background:var(--surface,#ffffff);font:400 14px/1.5 'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;caret-color:var(--primary,#245fa8);transition:border-color 160ms cubic-bezier(.16,1,.3,1)}.ds-field::placeholder{color:var(--muted,#586b83);opacity:1}.ds-field:hover{border-color:#8399b5}.ds-field:focus-visible { outline:3px solid #487ebd; outline-offset:3px; }.ds-field:disabled{background:var(--bg-muted,#f7f9fc);color:var(--muted,#586b83);cursor:not-allowed}@media(max-width:760px){.ds-field{font-size:16px}}@media(prefers-reduced-motion:reduce){.ds-field{transition:none}}"
+    },
+    {
+      "name": "Navigation",
+      "kind": "nav",
+      "refersTo": "navigation",
+      "description": "Blue rail links; horizontal on mobile.",
+      "html": "<nav class=\"ds-navigation\" aria-label=\"Main navigation\"><a class=\"ds-nav-link ds-active\" href=\"#users\" aria-current=\"page\">Users &amp; Groups <span class=\"ds-nav-arrow\" aria-hidden=\"true\">→</span></a><a class=\"ds-nav-link\" href=\"#applications\">Applications</a><a class=\"ds-nav-link\" href=\"#environments\">Environments</a></nav>",
+      "css": ".ds-navigation{display:flex;flex-direction:column;gap:5px;background:var(--rail,#18345c);padding:14px;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif}.ds-nav-link{display:flex;align-items:center;gap:11px;padding:11px 12px;color:var(--rail-muted,#b7c9e2);text-decoration:none;font-size:13px;font-weight:500;border-radius:6px;white-space:nowrap}.ds-nav-link:hover{background:#244674;color:var(--rail-text,#f0f5fc)}.ds-nav-link.ds-active{background:#315582;color:#fff}.ds-nav-arrow{margin-left:auto}.ds-nav-link:focus-visible { outline:3px solid #487ebd; outline-offset:3px; }@media(max-width:760px){.ds-navigation{flex-direction:row;overflow-x:auto;gap:4px}.ds-nav-link{padding:10px;font-size:12px}.ds-nav-arrow{display:none}}"
+    },
+    {
+      "name": "Status badge",
+      "kind": "chip",
+      "refersTo": "status-badge",
+      "description": "Text and a semantic dot represent identity activity.",
+      "html": "<span class=\"ds-status\">Active</span> <span class=\"ds-status ds-inactive\">Inactive</span>",
+      "css": ".ds-status{display:inline-flex;align-items:center;gap:6px;padding:3px 8px;border-radius:4px;background:var(--selected,#e8f0fb);color:var(--primary,#245fa8);font:500 11px 'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;white-space:nowrap}.ds-status::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}.ds-status.ds-inactive{background:#edf1f6;color:#5b6e87}"
+    },
+    {
+      "name": "Data panel",
+      "kind": "card",
+      "refersTo": "data-panel",
+      "description": "Flat bordered table surface with compact header and locally scrollable rows.",
+      "html": "<div class=\"ds-panel\"><div class=\"ds-toolbar\">Users <span>1 user</span></div><div class=\"ds-scroll\" role=\"region\" aria-label=\"Users table\" tabindex=\"0\"><table class=\"ds-table\"><thead><tr><th scope=\"col\">Username</th><th scope=\"col\">Name</th></tr></thead><tbody><tr><td>jane.doe</td><td>Jane Doe</td></tr></tbody></table></div></div>",
+      "css": ".ds-panel{background:var(--surface,#ffffff);color:var(--ink,#263a54);border:1px solid var(--border,#dbe3ef);border-radius:8px;overflow:hidden;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif}.ds-toolbar{display:flex;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid var(--border,#dbe3ef);font-size:13px}.ds-toolbar span{font-size:12px;color:var(--muted,#586b83)}.ds-scroll{overflow-x:auto;overscroll-behavior-x:contain}.ds-scroll:focus-visible { outline:3px solid #487ebd; outline-offset:3px; }.ds-table{width:100%;border-collapse:collapse;font-size:13px}.ds-table th,.ds-table td{text-align:left;padding:14px 18px;border-bottom:1px solid var(--border,#dbe3ef);overflow-wrap:anywhere}.ds-table th{font-size:11px;font-weight:600;color:var(--muted,#586b83);padding-block:11px;background:var(--bg-muted,#f7f9fc)}.ds-table tbody tr:last-child td{border-bottom:0}.ds-table tbody tr:hover{background:#f5f8fc}@media(max-width:760px){.ds-table{min-width:580px}.ds-table th,.ds-table td{padding:12px 14px}.ds-toolbar{padding:14px}}"
+    },
+    {
+      "name": "Context path",
+      "kind": "custom",
+      "refersTo": "context-strip",
+      "description": "Environment and application selection defines action scope, without claiming connectivity.",
+      "html": "<div class=\"ds-context\"><label>Environment<select><option>Production</option></select></label><span class=\"ds-context-arrow\" aria-hidden=\"true\">→</span><label>Application<select><option>Directory</option></select></label><div class=\"ds-summary\" aria-live=\"polite\"><strong>Production / Directory</strong><span>All identity actions use this selection</span></div></div>",
+      "css": ".ds-context{display:grid;grid-template-columns:minmax(140px,1fr) 24px minmax(160px,1.4fr) minmax(120px,auto);gap:16px;align-items:center;padding:18px 20px;background:#eaf0f8;border-radius:8px;font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif}.ds-context label{display:flex;flex-direction:column;gap:6px;font-size:11px;font-weight:600;color:#486384}.ds-context select{width:100%;min-width:0;min-height:38px;padding:8px 11px;border:1px solid var(--border-strong,#c2cfe1);border-radius:6px;color:var(--ink,#263a54);background:var(--surface,#ffffff);font-size:13px}.ds-context select:hover{border-color:#8399b5}.ds-context select:focus-visible { outline:3px solid #487ebd; outline-offset:3px; }.ds-context-arrow{color:#5d779b;margin-top:20px;font-size:16px}.ds-summary{padding-left:16px;border-left:1px solid #ccd9eb;font-size:12px;overflow-wrap:anywhere}.ds-summary strong{display:block;font-weight:600;color:var(--ink,#263a54)}.ds-summary span{display:block;color:var(--muted,#586b83);font-size:11px;margin-top:4px}@media(max-width:1100px){.ds-context{grid-template-columns:minmax(100px,1fr) 20px minmax(120px,1.3fr);gap:12px}.ds-summary{grid-column:1/-1;border-left:0;border-top:1px solid #ccd9eb;padding:10px 0 0;display:flex;justify-content:space-between;gap:12px}.ds-summary span{margin:0}}@media(max-width:760px){.ds-context{padding:16px}.ds-context select{font-size:16px}}@media(max-width:420px){.ds-context{grid-template-columns:1fr}.ds-context-arrow{display:none}.ds-summary{flex-direction:column;gap:3px}}"
+    },
+    {
+      "name": "Identity tabs",
+      "kind": "custom",
+      "refersTo": "tabs",
+      "description": "Selected underline and quiet text; static preview, keyboard behavior belongs to production React.",
+      "html": "<div class=\"ds-tabs\" role=\"tablist\" aria-label=\"Identity resource\"><button class=\"ds-tab ds-tab-active\" role=\"tab\" aria-selected=\"true\">Users</button><button class=\"ds-tab\" role=\"tab\" aria-selected=\"false\" tabindex=\"-1\">Groups</button></div>",
+      "css": ".ds-tabs{display:flex;gap:24px;border-bottom:1px solid var(--border,#dbe3ef)}.ds-tab{display:inline-flex;align-items:center;gap:8px;border-radius:0;padding:11px 2px 12px;min-height:42px;color:var(--muted,#586b83);border:0;background:transparent;position:relative;font:600 13px/1.4 'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;cursor:pointer}.ds-tab:hover,.ds-tab.ds-tab-active{color:var(--primary,#245fa8)}.ds-tab.ds-tab-active::after{content:'';position:absolute;inset:auto 0 -1px;height:2px;background:var(--primary,#245fa8)}.ds-tab:focus-visible { outline:3px solid #487ebd; outline-offset:3px; }.ds-tab:active{transform:translateY(1px)}@media(prefers-reduced-motion:reduce){.ds-tab:active{transform:none}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Technical Standards Desk",
+    "overview": "SCIM Viewer uses the visual discipline of technical standards publications: crisp system typography, a deep blue navigation field and pale mineral data surfaces. This is an Operate interface for daily inspection and administration, with compact controls and familiar tables rather than oversized display typography.\n\nHierarchy comes from tonal contrast, borders and restrained spacing. The selected environment and application form an explicit path above identity data; that path describes the target of actions. SCIM Viewer and the established English domain labels remain the visible product vocabulary.",
+    "keyCharacteristics": [
+      "Deep blue navigation beside light mineral work surfaces.",
+      "One system sans family for the operator interface; monospace reserved for endpoints.",
+      "Compact table toolbars, labelled creation actions and quiet row controls.",
+      "Explicit context selection, keyboard tabs and semantic status text.",
+      "Flat data surfaces with depth reserved for overlays and notifications."
+    ],
+    "rules": [
+      {
+        "name": "The Context Truth Rule",
+        "body": "A selected environment/application path communicates action scope; it does not prove connectivity.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Interface Voice Rule",
+        "body": "Keep navigation, data, actions and forms in the system sans stack; reserve monospace for technical endpoint values.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Data Rule",
+        "body": "Keep tables and their work surfaces flat; use overlay depth for drawers and notifications.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do use the existing blue, mineral, ink and muted tokens for new operator screens.",
+      "Do keep environment and application names visible when administering identities.",
+      "Do give primary creation actions visible labels and icon-only row controls accessible names.",
+      "Do distinguish loading, failure, empty data and empty search results.",
+      "Do retain keyboard focus, semantic table headings and local horizontal scrolling."
+    ],
+    "donts": [
+      "Don't describe context selection as a verified connection or connectivity status.",
+      "Don't introduce a separate display font or promotional hero scale into everyday data screens.",
+      "Don't use status color without the corresponding textual label.",
+      "Don't replace standard Ant Design drawers with a second modal interaction system.",
+      "Don't turn local table overflow into horizontal page scrolling."
+    ]
+  }
+}

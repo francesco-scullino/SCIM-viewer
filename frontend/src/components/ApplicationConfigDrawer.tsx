@@ -33,6 +33,7 @@ export function ApplicationConfigDrawer({
 }: ApplicationConfigDrawerProps) {
   return (
     <Drawer title={form.id != null ? 'Edit configuration' : 'New configuration'} onClose={onClose} open={open} size={640}>
+      <p className="hint">Set the credentials and SCIM endpoint for this application and environment.</p>
       <form className="drawer-form" onSubmit={onSubmit}>
         <label>
           Environment

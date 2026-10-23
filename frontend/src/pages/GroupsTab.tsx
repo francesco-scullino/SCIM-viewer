@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { PlusOutlined, ReloadOutlined, TeamOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
 import { Input } from 'antd';
 import { scimApi } from '../api/scim';
@@ -9,6 +9,7 @@ import { GroupDrawer } from '../components/GroupDrawer';
 import { GroupMembersDrawer } from '../components/GroupMembersDrawer';
 import { IconButton } from '../components/IconButton';
 import { Loader } from '../components/Loader';
+import { EmptyState, DataError } from '../components/EmptyState';
 
 function formatMemberLabel(member: ScimGroupMemberRef, usersById: Map<string, ScimUser>): string {
   const user = usersById.get(member.value);
@@ -29,7 +30,10 @@ interface Props {
 export function GroupsTab({ applicationId, environmentId }: Props) {
   const [groups, setGroups] = useState<ScimGroup[]>([]);
   const [users, setUsers] = useState<ScimUser[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const requestId = useRef(0);
+  const usersRequestId = useRef(0);
   const [groupDrawerOpen, setGroupDrawerOpen] = useState(false);
   const [groupSubmitting, setGroupSubmitting] = useState(false);
   const [displayName, setDisplayName] = useState('');
@@ -39,33 +43,33 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
   const { showError, showSuccess } = useToast();
 
   const loadGroups = (searchTerm: string) => {
+    const currentRequest = ++requestId.current;
     setLoading(true);
-    scimApi
-      .listGroups(applicationId, environmentId, buildStartsWithFilter('displayName', searchTerm))
-      .then((res) => setGroups(res.Resources ?? []))
-      .catch((err) => showError(describeError(err)))
-      .finally(() => setLoading(false));
+    setLoadError('');
+    scimApi.listGroups(applicationId, environmentId, buildStartsWithFilter('displayName', searchTerm))
+      .then((res) => { if (currentRequest === requestId.current) setGroups(res.Resources ?? []); })
+      .catch((err) => { if (currentRequest !== requestId.current) return; const message = describeError(err); setLoadError(message); showError(message); })
+      .finally(() => { if (currentRequest === requestId.current) setLoading(false); });
   };
 
   const loadUsers = () => {
-    scimApi
-      .listUsers(applicationId, environmentId)
-      .then((res) => setUsers(res.Resources ?? []))
-      .catch((err) => showError(describeError(err)));
+    const currentRequest = ++usersRequestId.current;
+    scimApi.listUsers(applicationId, environmentId)
+      .then((res) => { if (currentRequest === usersRequestId.current) setUsers(res.Resources ?? []); })
+      .catch((err) => { if (currentRequest === usersRequestId.current) showError(describeError(err)); });
   };
 
   useEffect(() => {
-    setSearch('');
-    loadGroups('');
     loadUsers();
+    return () => { usersRequestId.current += 1; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [applicationId, environmentId]);
 
   useEffect(() => {
-    const handle = setTimeout(() => loadGroups(search), 350);
-    return () => clearTimeout(handle);
+    const handle = setTimeout(() => loadGroups(search), search ? 350 : 0);
+    return () => { clearTimeout(handle); requestId.current += 1; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search]);
+  }, [search, applicationId, environmentId]);
 
   const handleCreateGroup = async (e: FormEvent) => {
     e.preventDefault();
@@ -143,79 +147,25 @@ export function GroupsTab({ applicationId, environmentId }: Props) {
   };
 
   return (
-    <div>
-      <div className="tab-toolbar">
-        <IconButton icon={<PlusOutlined />} label="New group" onClick={handleOpenGroupDrawer} />
-        <IconButton
-          icon={<ReloadOutlined />}
-          label="Refresh"
-          onClick={() => {
-            loadGroups(search);
-            loadUsers();
-          }}
-        />
-        <Input
-          allowClear
-          placeholder="Search by group name"
-          prefix={<SearchOutlined />}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="search-input"
-        />
+    <div className="data-panel" aria-busy={loading}>
+      <div className="table-toolbar">
+        <div className="toolbar-search"><Input allowClear placeholder="Search by group name" aria-label="Search groups by name" prefix={<SearchOutlined />} value={search} onChange={(e) => setSearch(e.target.value)} className="search-input" /><span className="result-count" aria-live="polite">{loading ? 'Loading…' : loadError ? 'Unavailable' : groups.length + (groups.length === 1 ? ' group' : ' groups')}</span></div>
+        <div className="toolbar-actions"><IconButton icon={<ReloadOutlined />} label="Refresh groups" className="secondary" disabled={loading} onClick={() => { loadGroups(search); loadUsers(); }} /><IconButton icon={<PlusOutlined />} label="New group" showLabel onClick={handleOpenGroupDrawer} /></div>
       </div>
-
-      <GroupDrawer
-        open={groupDrawerOpen}
-        displayName={displayName}
-        onClose={handleCloseGroupDrawer}
-        onSubmit={handleCreateGroup}
-        onChange={setDisplayName}
-        isLoading={groupSubmitting}
-      />
-
-      <GroupMembersDrawer
-        open={membersGroupId != null}
-        group={membersGroup}
-        users={users}
-        addUserId={addUserId}
-        onClose={closeMembers}
-        onAddUserIdChange={setAddUserId}
-        onAddMember={handleAddMember}
-        onRemoveMember={handleRemoveMember}
-        formatMemberLabel={(member) => formatMemberLabel(member, usersById)}
-        formatUserLabel={formatUserLabel}
-      />
-
-      {loading ? (
-        <Loader />
-      ) : (
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Group name</th>
-              <th>Members</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {groups.map((group) => (
-              <tr key={group.id}>
-                <td>{group.displayName}</td>
-                <td>{group.members?.length ?? 0}</td>
-                <td className="actions">
-                  <IconButton icon={<TeamOutlined />} label="Manage members" onClick={() => openMembers(group)} />
-                  <IconButton icon={<DeleteOutlined />} label="Delete" danger onClick={() => handleDeleteGroup(group)} />
-                </td>
-              </tr>
-            ))}
-            {groups.length === 0 && (
-              <tr>
-                <td colSpan={3}>No groups found.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      )}
+      <GroupDrawer open={groupDrawerOpen} displayName={displayName} onClose={handleCloseGroupDrawer} onSubmit={handleCreateGroup} onChange={setDisplayName} isLoading={groupSubmitting} />
+      <GroupMembersDrawer open={membersGroupId != null} group={membersGroup} users={users} addUserId={addUserId} onClose={closeMembers} onAddUserIdChange={setAddUserId} onAddMember={handleAddMember} onRemoveMember={handleRemoveMember} formatMemberLabel={(member) => formatMemberLabel(member, usersById)} formatUserLabel={formatUserLabel} />
+      {loading ? <Loader label="Loading groups…" /> : loadError ? <DataError message={loadError} onRetry={() => loadGroups(search)} /> : groups.length === 0 ? (
+        <EmptyState icon={<TeamOutlined />} title={search ? 'No matching groups' : 'No groups in this context'} description={search ? 'Try a different group name prefix or clear your search.' : 'Create a group, then add users to organise their memberships.'} action={search ? <button type="button" className="secondary" onClick={() => setSearch('')}>Clear search</button> : <IconButton icon={<PlusOutlined />} label="New group" showLabel onClick={handleOpenGroupDrawer} />} />
+      ) : <div className="table-scroll" role="region" aria-label="Groups table" tabIndex={0}><table className="data-table groups-table">
+        <caption className="visually-hidden">Groups in the selected application and environment</caption>
+        <thead><tr><th scope="col">Group name</th><th scope="col">Members</th><th scope="col" className="actions-heading">Actions</th></tr></thead>
+        <tbody>{groups.map((group) => <tr key={group.id}>
+          <td><div className="identity-cell"><span className="identity-avatar" aria-hidden="true"><TeamOutlined /></span><div><span className="identity-name">{group.displayName}</span><span className="identity-id" title={group.id}>{group.id}</span></div></div></td>
+          <td><span className="member-count">{group.members?.length ?? 0} {(group.members?.length ?? 0) === 1 ? 'member' : 'members'}</span></td>
+          <td className="actions"><IconButton icon={<TeamOutlined />} label="Manage members" showLabel className="secondary" onClick={() => openMembers(group)} /><IconButton icon={<DeleteOutlined />} label={'Delete group ' + group.displayName} danger onClick={() => handleDeleteGroup(group)} /></td>
+        </tr>)}</tbody>
+      </table></div>}
+      {!loading && !loadError && groups.length > 0 && <div className="table-footer"><span>{groups.length} {groups.length === 1 ? 'group' : 'groups'} shown</span><span>Search matches the beginning of a group name</span></div>}
     </div>
   );
 }

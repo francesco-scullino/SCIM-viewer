@@ -1,15 +1,4 @@
-import { Spin } from 'antd';
-
-interface LoaderProps {
-  label?: string;
-}
-
-/** Centered loading spinner used consistently across the app while data is being fetched. */
-export function Loader({ label = 'Loading...' }: LoaderProps) {
-  return (
-    <div className="loader-container">
-      <Spin size="large" />
-      <span className="loader-label">{label}</span>
-    </div>
-  );
+interface LoaderProps { label?: string }
+export function Loader({ label = 'Loading data…' }: LoaderProps) {
+  return <div className="loader-container" role="status" aria-label={label}><div className="table-skeleton" aria-hidden="true">{Array.from({ length: 5 }, (_, index) => <div className="skeleton-row" key={index}><span /><span /><span /></div>)}</div><span className="visually-hidden">{label}</span></div>;
 }

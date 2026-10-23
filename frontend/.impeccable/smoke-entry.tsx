@@ -1,0 +1,45 @@
+import assert from 'node:assert/strict';
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { MemoryRouter } from 'react-router-dom';
+import { App } from '../src/App';
+import { UsersTab } from '../src/pages/UsersTab';
+import { ToastProvider, describeError } from '../src/components/ToastContext';
+import { ApiError } from '../src/api/client';
+import { DataError } from '../src/components/EmptyState';
+import { IconButton } from '../src/components/IconButton';
+const stored = new Map<string, string>();
+Object.defineProperty(globalThis, 'localStorage', { value: { getItem: (key: string) => stored.get(key) ?? null, setItem: (key: string, value: string) => stored.set(key, value), removeItem: (key: string) => stored.delete(key) } });
+function render(path: string) { return renderToStaticMarkup(createElement(MemoryRouter, { initialEntries: [path] }, createElement(App))); }
+for (const [path, title] of [['/', 'Users &amp; Groups'], ['/applications', 'Applications'], ['/environments', 'Environments']]) {
+  const html = render(path);
+  assert(html.includes('<h1>' + title + '</h1>'), path + ' page heading');
+  assert(html.includes('id="main-content"'), path + ' main landmark');
+  assert(html.includes('aria-current="page"'), path + ' active navigation');
+  assert(html.includes('Skip to content'), path + ' keyboard skip link');
+}
+const initial = render('/');
+assert(initial.includes('Your identity workspace starts here'));
+assert(initial.includes('Register an environment'));
+assert(!initial.includes('role="tablist"'));
+stored.set('scim-viewer.selectedEnvironmentId', '7');
+stored.set('scim-viewer.selectedApplicationId', '12');
+const selected = render('/');
+assert(!selected.includes('role="tablist"'), 'Persisted IDs must not enable actions before registry validation');
+const users = renderToStaticMarkup(createElement(ToastProvider, null, createElement(UsersTab, { applicationId: 12, environmentId: 7 })));
+assert(users.includes('aria-label="Search users by username"'));
+assert(users.includes('New user'));
+assert(users.includes('Loading users'));
+assert(render('/missing').includes('Page not found'));
+const error = renderToStaticMarkup(createElement(DataError, { message: 'Token endpoint unavailable', onRetry: () => {} }));
+assert(error.includes('role="alert"'));
+assert(error.includes('Try again'));
+const action = renderToStaticMarkup(createElement(IconButton, { icon: null, label: 'New application', showLabel: true }));
+assert(action.includes('aria-label="New application"'));
+assert(action.includes('<span>New application</span>'));
+assert(describeError(new ApiError('Token endpoint returned an error', 401, { error: 'invalid_client', error_description: 'Client authentication failed' })).includes('invalid_client · Client authentication failed'));
+assert(describeError(new ApiError('SCIM request failed', 400, { detail: 'Invalid filter' })).includes('Invalid filter'));
+assert(!describeError(new ApiError('Unknown response', 500, { clientSecret: 'never-echo', nested: { access_token: 'never-echo' }, status: 500 })).includes('never-echo'));
+const contrast = (a: string, b: string) => { const luminance = (hex: string) => { const rgb = hex.match(/[a-f0-9]{2}/gi)!.map((v) => parseInt(v, 16) / 255).map((v) => v <= .04045 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4)); return rgb[0] * .2126 + rgb[1] * .7152 + rgb[2] * .0722; }; const la = luminance(a), lb = luminance(b); return (Math.max(la, lb) + .05) / (Math.min(la, lb) + .05); };
+for (const [a,b] of [['#586b83','#eaf0f8'], ['#586b83','#ffffff'], ['#b7c9e2','#18345c'], ['#245fa8','#e8f0fb']]) assert(contrast(a,b) >= 4.5, a + ' on ' + b);
+console.log('PASS: routes, navigation, empty/selected contexts, keyboard landmarks, loading, errors and labelled actions');

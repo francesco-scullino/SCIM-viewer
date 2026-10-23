@@ -1,5 +1,5 @@
-import { FormEvent, useEffect, useState } from 'react';
-import { PlusOutlined, ReloadOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
+import { FormEvent, useEffect, useRef, useState } from 'react';
+import { PlusOutlined, ReloadOutlined, DeleteOutlined, SearchOutlined, UserOutlined } from '@ant-design/icons';
 import { Input } from 'antd';
 import { scimApi } from '../api/scim';
 import { ScimUser } from '../api/types';
@@ -8,6 +8,7 @@ import { useToast, describeError } from '../components/ToastContext';
 import { UserDrawer } from '../components/UserDrawer';
 import { IconButton } from '../components/IconButton';
 import { Loader } from '../components/Loader';
+import { EmptyState, DataError } from '../components/EmptyState';
 
 interface UserFormState {
   userName: string;
@@ -26,7 +27,9 @@ interface Props {
 
 export function UsersTab({ applicationId, environmentId }: Props) {
   const [users, setUsers] = useState<ScimUser[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const requestId = useRef(0);
   const [form, setForm] = useState<UserFormState>(emptyForm);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -34,25 +37,21 @@ export function UsersTab({ applicationId, environmentId }: Props) {
   const { showError, showSuccess } = useToast();
 
   const load = (searchTerm: string) => {
+    const currentRequest = ++requestId.current;
     setLoading(true);
-    scimApi
-      .listUsers(applicationId, environmentId, buildStartsWithFilter('userName', searchTerm))
-      .then((res) => setUsers(res.Resources ?? []))
-      .catch((err) => showError(describeError(err)))
-      .finally(() => setLoading(false));
+    setLoadError('');
+    scimApi.listUsers(applicationId, environmentId, buildStartsWithFilter('userName', searchTerm))
+      .then((res) => { if (currentRequest === requestId.current) setUsers(res.Resources ?? []); })
+      .catch((err) => { if (currentRequest !== requestId.current) return; const message = describeError(err); setLoadError(message); showError(message); })
+      .finally(() => { if (currentRequest === requestId.current) setLoading(false); });
   };
 
   useEffect(() => {
-    setSearch('');
-    load('');
+    const handle = setTimeout(() => load(search), search ? 350 : 0);
+    return () => { clearTimeout(handle); requestId.current += 1; };
+    // Each context has a fresh component instance; discard outdated search responses.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [applicationId, environmentId]);
-
-  useEffect(() => {
-    const handle = setTimeout(() => load(search), 350);
-    return () => clearTimeout(handle);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search]);
+  }, [search, applicationId, environmentId]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -98,64 +97,26 @@ export function UsersTab({ applicationId, environmentId }: Props) {
   };
 
   return (
-    <div>
-      <div className="tab-toolbar">
-        <IconButton icon={<PlusOutlined />} label="New user" onClick={handleOpenDrawer} />
-        <IconButton icon={<ReloadOutlined />} label="Refresh" onClick={() => load(search)} />
-        <Input
-          allowClear
-          placeholder="Search by username"
-          prefix={<SearchOutlined />}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="search-input"
-        />
+    <div className="data-panel" aria-busy={loading}>
+      <div className="table-toolbar">
+        <div className="toolbar-search"><Input allowClear placeholder="Search by username" aria-label="Search users by username" prefix={<SearchOutlined />} value={search} onChange={(e) => setSearch(e.target.value)} className="search-input" /><span className="result-count" aria-live="polite">{loading ? 'Loading…' : loadError ? 'Unavailable' : users.length + (users.length === 1 ? ' user' : ' users')}</span></div>
+        <div className="toolbar-actions"><IconButton icon={<ReloadOutlined />} label="Refresh users" className="secondary" disabled={loading} onClick={() => load(search)} /><IconButton icon={<PlusOutlined />} label="New user" showLabel onClick={handleOpenDrawer} /></div>
       </div>
-
-      <UserDrawer
-        open={drawerOpen}
-        form={form}
-        onClose={handleCloseDrawer}
-        onSubmit={handleSubmit}
-        onChange={setForm}
-        isLoading={submitting}
-      />
-
-      {loading ? (
-        <Loader />
-      ) : (
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Username</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Status</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td>{user.userName}</td>
-                <td>
-                  {[user.name?.givenName, user.name?.familyName].filter(Boolean).join(' ') || '-'}
-                </td>
-                <td>{user.emails?.[0]?.value || '-'}</td>
-                <td>{user.active === false ? 'Inactive' : 'Active'}</td>
-                <td className="actions">
-                  <IconButton icon={<DeleteOutlined />} label="Delete" danger onClick={() => handleDelete(user)} />
-                </td>
-              </tr>
-            ))}
-            {users.length === 0 && (
-              <tr>
-                <td colSpan={5}>No users found.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      )}
+      <UserDrawer open={drawerOpen} form={form} onClose={handleCloseDrawer} onSubmit={handleSubmit} onChange={setForm} isLoading={submitting} />
+      {loading ? <Loader label="Loading users…" /> : loadError ? <DataError message={loadError} onRetry={() => load(search)} /> : users.length === 0 ? (
+        <EmptyState icon={<UserOutlined />} title={search ? 'No matching users' : 'No users in this context'} description={search ? 'Try a different username prefix or clear your search.' : 'Create a user to add the first identity to this application and environment.'} action={search ? <button type="button" className="secondary" onClick={() => setSearch('')}>Clear search</button> : <IconButton icon={<PlusOutlined />} label="New user" showLabel onClick={handleOpenDrawer} />} />
+      ) : <div className="table-scroll" role="region" aria-label="Users table" tabIndex={0}><table className="data-table">
+        <caption className="visually-hidden">Users in the selected application and environment</caption>
+        <thead><tr><th scope="col">Username</th><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Status</th><th scope="col" className="actions-heading">Actions</th></tr></thead>
+        <tbody>{users.map((user) => <tr key={user.id}>
+          <td><div className="identity-cell"><span className="identity-avatar" aria-hidden="true">{Array.from(user.userName).slice(0, 2).join('').toUpperCase()}</span><div><span className="identity-name">{user.userName}</span><span className="identity-id" title={user.id}>{user.id}</span></div></div></td>
+          <td>{[user.name?.givenName, user.name?.familyName].filter(Boolean).join(' ') || '—'}</td>
+          <td>{user.emails?.[0]?.value || '—'}</td>
+          <td><span className={'status-badge' + (user.active === false ? ' inactive' : '')}>{user.active === false ? 'Inactive' : 'Active'}</span></td>
+          <td className="actions"><IconButton icon={<DeleteOutlined />} label={'Delete user ' + user.userName} danger onClick={() => handleDelete(user)} /></td>
+        </tr>)}</tbody>
+      </table></div>}
+      {!loading && !loadError && users.length > 0 && <div className="table-footer"><span>{users.length} {users.length === 1 ? 'user' : 'users'} shown</span><span>Search matches the beginning of a username</span></div>}
     </div>
   );
 }

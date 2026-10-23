@@ -22,6 +22,7 @@ interface UserDrawerProps {
 export function UserDrawer({ open, form, onClose, onSubmit, onChange, isLoading }: UserDrawerProps) {
   return (
     <Drawer title="New user" onClose={onClose} open={open} size={480}>
+      <p className="hint">The user will be created in the selected application and environment.</p>
       <form className="drawer-form" onSubmit={onSubmit}>
         <label>
           Username

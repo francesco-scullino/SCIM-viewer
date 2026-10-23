@@ -14,6 +14,7 @@ interface GroupDrawerProps {
 export function GroupDrawer({ open, displayName, onClose, onSubmit, onChange, isLoading }: GroupDrawerProps) {
   return (
     <Drawer title="New group" onClose={onClose} open={open} size={420}>
+      <p className="hint">Create a group in the selected context. You can add members afterwards.</p>
       <form className="drawer-form" onSubmit={onSubmit}>
         <label>
           Group name

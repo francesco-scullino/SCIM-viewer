@@ -21,6 +21,7 @@ interface EnvironmentDrawerProps {
 export function EnvironmentDrawer({ open, form, onClose, onSubmit, onChange, isLoading }: EnvironmentDrawerProps) {
   return (
     <Drawer title={form.id != null ? 'Edit environment' : 'New environment'} onClose={onClose} open={open} size={560}>
+      <p className="hint">Applications in this environment share this identity provider.</p>
       <form className="drawer-form" onSubmit={onSubmit}>
         <label>
           Name
